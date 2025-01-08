@@ -1,6 +1,5 @@
-package com.example.ShortenerProject.repository;
+package com.example.ShortenerProject.user;
 
-import com.example.ShortenerProject.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 
