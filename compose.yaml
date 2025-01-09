@@ -1,4 +1,24 @@
 services:
+  app:
+    image: your-app-image:latest
+    container_name: java-app
+    ports:
+      - "8080:8080"
+    networks:
+      - app-network
+    environment:
+      #H2 settings
+      SPRING_DATASOURCE_URL: "jdbc:h2:mem:notesdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE"
+      SPRING_DATASOURCE_USERNAME: "sa"
+      SPRING_DATASOURCE_PASSWORD: ""
+      SPRING_H2_CONSOLE_ENABLED: "true"
+      #Postgres settings
+#      SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/mydb
+#      SPRING_DATASOURCE_USERNAME=postgres
+#      SPRING_DATASOURCE_PASSWORD=password
+    depends_on:
+      - postgres  # Включится, когда перейдёте на PostgreSQL
+
   postgres:
     image: 'postgres:latest'
     environment:
@@ -6,4 +26,14 @@ services:
       - 'POSTGRES_PASSWORD=secret'
       - 'POSTGRES_USER=myuser'
     ports:
-      - '5432'
+      - '5432'#set ports
+    networks:
+      - app-network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
