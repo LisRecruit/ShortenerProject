@@ -1,32 +1,65 @@
 package com.example.ShortenerProject.user;
 
-import java.util.List;
+import com.example.ShortenerProject.user.dto.request.UserCreateRequest;
+import com.example.ShortenerProject.user.dto.response.UserResponse;
+import com.example.ShortenerProject.user.dto.request.UserUpdateRequest;
+import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+@Service
+@RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
+    //private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    @Transactional
+    public String createUser(UserCreateRequest request) {
+        if (userRepository.existsByUsername(request.username())) {
+            return "User with this username already exists";
+        }
+
+        User user = User.builder()
+                .username(request.username())
+                .password(request.password()) //додати passwordEncoder з SecurityConfig
+                .build();
+        userRepository.save(user);
+        return "User created";
     }
 
-    public User createUser(User user) {
-        return userRepository.save(user);
+    public Page<UserResponse> getAllUsers(PageRequest pageRequest) {
+        return userRepository.findAll(pageRequest)
+                .map(userMapper::toUserResponse);
     }
 
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public UserResponse getUserById(long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() ->
+                        new EntityNotFoundException("User with id " + id + " not found"));
+
+        return userMapper.toUserResponse(user);
     }
 
-    public User getUserById(long id) {
-        return userRepository.findById(id).orElse(null);
+    public UserResponse getUserByUsername(String username) {
+        return userMapper.toUserResponse(
+                userRepository.findByUsername(username)
+                        .orElseThrow(() -> new EntityNotFoundException("User with username " + username + " not found")));
     }
 
-    public User updateUser(User user) {
-        return userRepository.save(user);
+    @Transactional
+    public UserResponse updateUser(Long id, UserUpdateRequest request) {
+        User user = userRepository.findForUpdateById(id)
+                .orElseThrow(() -> new EntityNotFoundException("User with id " + id + " not found"));
+        user.setUsername(request.username());
+        return userMapper.toUserResponse(user);
     }
 
-    public void deleteUser(User user) {
-        userRepository.delete(user);
+    public void deleteUser(Long id) {
+        userRepository.deleteById(id);
     }
 
 }
