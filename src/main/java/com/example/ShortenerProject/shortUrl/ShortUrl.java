@@ -4,6 +4,8 @@ import com.example.ShortenerProject.user.User;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDate;
+
 @Entity
 @Table(name = "short_urls")
 @Data
@@ -19,10 +21,10 @@ public class ShortUrl {
     private String originUrl;
 
     @Column(name = "date_of_creating")
-    private String dateOfCreating;
+    private LocalDate dateOfCreating;
 
     @Column(name = "date_of_expiring")
-    private String dateOfExpiring;
+    private LocalDate dateOfExpiring;
 
     @Column(name = "count_of_transition")
     private long countOfTransition;
