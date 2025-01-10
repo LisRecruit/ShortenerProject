@@ -27,6 +27,7 @@ public class User {
     @Column(name = "password", unique = true, nullable = false)
     private String password;
 
+    @Builder.Default
     @OneToMany(mappedBy = "user")
-    List<ShortUrl> urls = new ArrayList<ShortUrl>();
+    List<ShortUrl> urls = new ArrayList<>();
 }

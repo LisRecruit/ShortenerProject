@@ -7,15 +7,17 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
+    private static final String NOT_FOUND=" not found";
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-    //private final PasswordEncoder passwordEncoder;
+//    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public String createUser(UserCreateRequest request) {
@@ -39,7 +41,7 @@ public class UserService {
     public UserResponse getUserById(long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() ->
-                        new EntityNotFoundException("User with id " + id + " not found"));
+                        new EntityNotFoundException("User with id " + id + NOT_FOUND));
 
         return userMapper.toUserResponse(user);
     }
@@ -47,13 +49,13 @@ public class UserService {
     public UserResponse getUserByUsername(String username) {
         return userMapper.toUserResponse(
                 userRepository.findByUsername(username)
-                        .orElseThrow(() -> new EntityNotFoundException("User with username " + username + " not found")));
+                        .orElseThrow(() -> new EntityNotFoundException("User with username " + username + NOT_FOUND)));
     }
 
     @Transactional
     public UserResponse updateUser(Long id, UserUpdateRequest request) {
         User user = userRepository.findForUpdateById(id)
-                .orElseThrow(() -> new EntityNotFoundException("User with id " + id + " not found"));
+                .orElseThrow(() -> new EntityNotFoundException("User with id " + id + NOT_FOUND));
         user.setUsername(request.username());
         return userMapper.toUserResponse(user);
     }
