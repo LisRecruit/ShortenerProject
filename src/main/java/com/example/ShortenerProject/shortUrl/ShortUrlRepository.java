@@ -1,6 +1,5 @@
-package com.example.ShortenerProject.repository;
+package com.example.ShortenerProject.shortUrl;
 
-import com.example.ShortenerProject.model.ShortUrl;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ShortUrlRepository extends JpaRepository<ShortUrl, Long> {
