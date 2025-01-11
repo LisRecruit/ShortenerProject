@@ -8,9 +8,11 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import javax.sql.DataSource;
 
@@ -32,15 +34,21 @@ public class SecurityConfig {
     }
     //For rest api
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.
-                securityMatcher("api/**")
-                .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(authorizeRequests ->
-                        authorizeRequests.anyRequest().permitAll())
-                .httpBasic(withDefaults());
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtRequestFilter jwtRequestFilter) throws Exception {
+        http
+                .csrf(AbstractHttpConfigurer::disable) // Вимкнення CSRF для REST API
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/auth/**").permitAll() // Дозволити маршрути аутентифікації
+                        .anyRequest().authenticated() // Усі інші маршрути вимагають аутентифікації
+                )
+                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class) // Додати JWT-фільтр
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Без сесій
+                );
+
         return http.build();
     }
+
 
 
     private PasswordEncoder passwordEncoder() {
