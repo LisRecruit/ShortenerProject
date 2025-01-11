@@ -22,6 +22,7 @@ public class ShortUrlController {
         this.shortUrlCreator = shortUrlCreator;
     }
 
+
     /**
      * Create a new shortened URL.
      *
@@ -54,6 +55,7 @@ public class ShortUrlController {
         return ResponseEntity.status(HttpStatus.CREATED).body(newShortUrl);
     }
 
+
     /**
      * Get all short URLs created by the user.
      *
@@ -68,6 +70,7 @@ public class ShortUrlController {
                 .toList();
         return ResponseEntity.ok(userUrls);
     }
+
 
     /**
      * Delete a shortened URL by its ID.
@@ -86,6 +89,7 @@ public class ShortUrlController {
         shortUrlRepository.delete(shortUrl.get());
         return ResponseEntity.noContent().build();
     }
+
 
     /**
      * Redirect to the original URL and update transition count.
