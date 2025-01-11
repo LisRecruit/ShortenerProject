@@ -5,19 +5,21 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 
 @RestController
 @RequestMapping("/api/v1/short-urls")
 public class ShortUrlController {
 
     private final ShortUrlRepository shortUrlRepository;
+    private final ShortUrlCreator shortUrlCreator;
 
-    public ShortUrlController(ShortUrlRepository shortUrlRepository) {
+    public ShortUrlController(ShortUrlRepository shortUrlRepository, ShortUrlCreator shortUrlCreator) {
         this.shortUrlRepository = shortUrlRepository;
+        this.shortUrlCreator = shortUrlCreator;
     }
 
     /**
@@ -29,8 +31,13 @@ public class ShortUrlController {
      */
     @PostMapping
     public ResponseEntity<ShortUrl> createShortUrl(@Valid @RequestBody CreateShortUrlRequest request, @RequestAttribute User user) {
+        // Validate the original URL
+        if (!shortUrlCreator.isValidUrl(request.getOriginUrl())) {
+            return ResponseEntity.badRequest().body(null);
+        }
+
         // Generate short URL
-        String shortUrl = generateShortUrl();
+        String shortUrl = shortUrlCreator.generateShortUrl();
 
         // Create ShortUrl object
         ShortUrl newShortUrl = new ShortUrl();
@@ -41,11 +48,11 @@ public class ShortUrlController {
         newShortUrl.setCountOfTransition(0);
         newShortUrl.setUser(user);
 
+        // Save to repository
         shortUrlRepository.save(newShortUrl);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(newShortUrl);
     }
-
 
     /**
      * Get all short URLs created by the user.
@@ -61,7 +68,6 @@ public class ShortUrlController {
                 .toList();
         return ResponseEntity.ok(userUrls);
     }
-
 
     /**
      * Delete a shortened URL by its ID.
@@ -80,7 +86,6 @@ public class ShortUrlController {
         shortUrlRepository.delete(shortUrl.get());
         return ResponseEntity.noContent().build();
     }
-
 
     /**
      * Redirect to the original URL and update transition count.
@@ -107,22 +112,7 @@ public class ShortUrlController {
                 .header("Location", url.getOriginUrl())
                 .build();
     }
-
-
-    private boolean isValidUrl(String url) {
-        return url.startsWith("http://") || url.startsWith("https://");
-    }
-
-
-    private String generateShortUrl() {
-        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        Random random = new Random();
-        StringBuilder shortUrl = new StringBuilder();
-        for (int i = 0; i < 8; i++) {
-            shortUrl.append(chars.charAt(random.nextInt(chars.length())));
-        }
-        return shortUrl.toString();
-    }
 }
+
 
 
