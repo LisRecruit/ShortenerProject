@@ -7,7 +7,6 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,11 +45,11 @@ public class UserService {
         return userMapper.toUserResponse(user);
     }
 
-    public UserResponse getUserByUsername(String username) {
-        return userMapper.toUserResponse(
-                userRepository.findByUsername(username)
-                        .orElseThrow(() -> new EntityNotFoundException("User with username " + username + NOT_FOUND)));
+    public User getUserByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException("User with username " + username + " NOT FOUND"));
     }
+
 
     @Transactional
     public UserResponse updateUser(Long id, UserUpdateRequest request) {
