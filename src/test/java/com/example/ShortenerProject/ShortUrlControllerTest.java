@@ -109,4 +109,81 @@ class ShortUrlControllerTest {
         System.out.println("User's Short URLs: ");
         userUrls.forEach(url -> System.out.println(" - " + url.getShortUrl()));
     }
+
+    @Test
+    void testGetShortUrlStats() throws Exception {
+        String shortUrl = faker.regexify("[A-Za-z0-9]{8}");
+        User mockUser = new User();
+        mockUser.setId(1L);
+        mockUser.setUsername(faker.name().username());
+
+        ShortUrl mockShortUrl = new ShortUrl();
+        mockShortUrl.setShortUrl(shortUrl);
+        mockShortUrl.setOriginUrl(faker.internet().url());
+        mockShortUrl.setCountOfTransition(5L);
+        mockShortUrl.setUser(mockUser);
+
+        when(shortUrlRepository.findAll()).thenReturn(List.of(mockShortUrl));
+
+        mockMvc.perform(get("/api/v1/short-urls/" + shortUrl+"/stats")
+                .requestAttr("user", mockUser))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.shortUrl").value(shortUrl))
+                .andExpect(jsonPath("$.countOfTransition").value(5L));
+    }
+
+    @Test
+    void testFindOriginalUrl() throws Exception {
+        String originalUrl = faker.internet().url();
+        User mockUser = new User();
+        mockUser.setId(1L);
+        mockUser.setUsername(faker.name().username());
+
+        ShortUrl mockShortUrl = new ShortUrl();
+        mockShortUrl.setShortUrl(faker.regexify("[A-Za-z0-9]{8}"));
+        mockShortUrl.setOriginUrl(originalUrl);
+        mockShortUrl.setUser(mockUser);
+
+        when(shortUrlRepository.findAll()).thenReturn(List.of(mockShortUrl));
+
+        mockMvc.perform(get("/api/v1/short-urls/search")
+                .param("originUrl", originalUrl)
+                .requestAttr("user", mockUser))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.shortUrl").value(originalUrl));
+    }
+
+    @Test
+    void testGetShortUrlStats_NotFound() throws Exception {
+        String shortUrl = faker.regexify("[A-Za-z0-9]{8}");
+        User mockUser = new User();
+        mockUser.setId(1L);
+
+        when(shortUrlRepository.findAll()).thenReturn(List.of());
+
+        mockMvc.perform(get("/api/v1/short-urls/" + shortUrl + "/stats")
+                        .requestAttr("user", mockUser))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void testFindOriginalUrlStatus_NotFound() throws Exception
+    {
+        String originUrl = faker.internet().url();
+        User mockUser = new User();
+        mockUser.setId(1L);
+        mockUser.setUsername(faker.name().username());
+
+        ShortUrl mockShortUrl = new ShortUrl();
+        mockShortUrl.setShortUrl(faker.regexify("[A-Za-z0-9]{8}"));
+        mockShortUrl.setOriginUrl(originUrl);
+        mockShortUrl.setUser(mockUser);
+
+        when(shortUrlRepository.findAll()).thenReturn(List.of());
+
+        mockMvc.perform(get("/api/v1/short-urls/search")
+                    .param("originUrl", originUrl)
+                    .requestAttr("user", mockUser))
+                .andExpect(status().isNotFound());
+    }
 }

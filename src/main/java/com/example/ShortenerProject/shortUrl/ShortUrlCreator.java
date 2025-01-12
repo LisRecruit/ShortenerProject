@@ -1,14 +1,23 @@
 package com.example.ShortenerProject.shortUrl;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Random;
 
 @Component
+@Data
 public class ShortUrlCreator {
 
     private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private static final int SHORT_URL_LENGTH = 8;
+    private final ShortUrlRepository shortUrlRepository;
+
+    public ShortUrlCreator(ShortUrlRepository shortUrlRepository) {
+        this.shortUrlRepository = shortUrlRepository;
+    }
 
     /**
      * Generate a random short URL.
@@ -22,6 +31,19 @@ public class ShortUrlCreator {
             shortUrl.append(CHARACTERS.charAt(random.nextInt(CHARACTERS.length())));
         }
         return shortUrl.toString();
+    }
+
+    /**
+     * Generate unique short URL
+     *
+     * @return Unique short URL
+     */
+    public String generateUniqueShortUrl() {
+        String shortUrl;
+        do{
+            shortUrl = generateShortUrl();
+        }while(shortUrlRepository.existsByShortUrl(shortUrl));
+        return shortUrl;
     }
 
     /**

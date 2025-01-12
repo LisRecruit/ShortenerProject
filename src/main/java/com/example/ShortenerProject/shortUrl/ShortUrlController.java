@@ -37,8 +37,8 @@ public class ShortUrlController {
             return ResponseEntity.badRequest().body(null);
         }
 
-        // Generate short URL
-        String shortUrl = shortUrlCreator.generateShortUrl();
+        // Generate unique short URL
+        String shortUrl = shortUrlCreator.generateUniqueShortUrl();
 
         // Create ShortUrl object
         ShortUrl newShortUrl = new ShortUrl();
@@ -115,6 +115,47 @@ public class ShortUrlController {
         return ResponseEntity.status(HttpStatus.FOUND)
                 .header("Location", url.getOriginUrl())
                 .build();
+    }
+
+    /**
+     * Retrieves statistics for a specific short URL created by the user.
+     *
+     * @param shortUrl the short URL for which statistics are requested
+     * @param user the current authenticated user making the request
+     * @return a {@link ResponseEntity} containing the {@link ShortUrl} object if found,
+     *         or a {@link ResponseEntity} with status 404 if the URL does not exist or does not belong to the user
+     */
+
+    @GetMapping("/{shortUrl}/stats")
+    public ResponseEntity<ShortUrl> getShortUrlStats(@PathVariable String shortUrl , @RequestAttribute User user) {
+        Optional<ShortUrl> url = shortUrlRepository.findAll()
+                .stream()
+                .filter(u->u.getShortUrl().equals(shortUrl) && u.getUser().getId() == user.getId())
+                .findFirst();
+        if (url.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(url.get());
+    }
+
+    /**
+     * Finds the original URL based on the provided short URL, ensuring it belongs to the authenticated user.
+     *
+     * @param originUrl the original URL to search for
+     * @param user the current authenticated user making the request
+     * @return a {@link ResponseEntity} containing the {@link ShortUrl} object if found,
+     *         or a {@link ResponseEntity} with status 404 if the original URL does not exist or does not belong to the user
+     */
+    @GetMapping("/search")
+    public ResponseEntity<ShortUrl> findOriginalUrl(@RequestParam String originUrl, @RequestParam User user) {
+        Optional<ShortUrl> url = shortUrlRepository.findAll()
+                .stream()
+                .filter(u->u.getOriginUrl().equals(originUrl) && u.getUser().getId() == user.getId())
+                .findFirst();
+        if (url.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(url.get());
     }
 }
 

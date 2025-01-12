@@ -1,15 +1,29 @@
 package com.example.ShortenerProject;
 
 import com.example.ShortenerProject.shortUrl.ShortUrlCreator;
+import com.example.ShortenerProject.shortUrl.ShortUrlRepository;
 import net.datafaker.Faker;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.*;
 
 public class ShortUrlCreatorTest {
 
-    private final ShortUrlCreator shortUrlCreator = new ShortUrlCreator();
+    @Mock
+    private ShortUrlRepository shortUrlRepository;
+    private ShortUrlCreator shortUrlCreator;
     private final Faker faker = new Faker();
+
+    @BeforeEach
+    void setup() {
+        MockitoAnnotations.openMocks(this);
+        shortUrlCreator = new ShortUrlCreator(shortUrlRepository);
+    }
 
     @Test
     void testGenerateShortUrl() {
@@ -30,6 +44,19 @@ public class ShortUrlCreatorTest {
 
         assertTrue(shortUrlCreator.isValidUrl(validUrl), "Valid URL should return true");
         assertFalse(shortUrlCreator.isValidUrl(invalidUrl), "Invalid URL should return false");
+    }
+
+    @Test
+    void testGenerateUniqueShortUrl() {
+        when(shortUrlRepository.existsByShortUrl(anyString())).thenReturn(false);
+
+        String uniqueShortUrl = shortUrlCreator.generateUniqueShortUrl();
+
+        assertNotNull(uniqueShortUrl, "Unique Short URL should not be null");
+        assertEquals(8, uniqueShortUrl.length(), "Unique Short URL should have a length of 8 characters");
+        System.out.println("Generated Unique Short URL: " + uniqueShortUrl);
+
+        verify(shortUrlRepository, atLeastOnce()).existsByShortUrl(anyString());
     }
 
 }
