@@ -13,7 +13,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -24,7 +23,6 @@ public class AuthController {
     private final UserDetailsService userDetailsService;
     private final JwtUtil jwtUtil;
     private final UserService userService;
-
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
@@ -40,7 +38,7 @@ public class AuthController {
             return ResponseEntity.ok(new AuthResponse(token));
         } catch (BadCredentialsException e) {
             e.printStackTrace();
-            return ResponseEntity.status(401).body("Невірне ім'я користувача або пароль");
+            return ResponseEntity.status(401).body("Invalid username or password");
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body("Internal Server Error");
@@ -58,7 +56,6 @@ public class AuthController {
                             request.password()
                     )
             );
-
             UserDetails userDetails = userDetailsService.loadUserByUsername(request.username());
             String token = jwtUtil.generateToken(userDetails);
 
