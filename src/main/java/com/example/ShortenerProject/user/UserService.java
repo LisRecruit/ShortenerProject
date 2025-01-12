@@ -7,6 +7,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,7 +17,7 @@ public class UserService {
     private static final String NOT_FOUND=" not found";
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-//    private final PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public String createUser(UserCreateRequest request) {
@@ -26,10 +27,10 @@ public class UserService {
 
         User user = User.builder()
                 .username(request.username())
-                .password(request.password()) //додати passwordEncoder з SecurityConfig
+                .password(passwordEncoder.encode(request.password())) //додати passwordEncoder з SecurityConfig
                 .build();
         userRepository.save(user);
-        return "User created";
+        return "User with username " + request.username() + " created";
     }
 
     public Page<UserResponse> getAllUsers(PageRequest pageRequest) {
