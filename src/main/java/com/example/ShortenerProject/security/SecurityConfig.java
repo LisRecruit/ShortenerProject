@@ -11,6 +11,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -41,11 +42,16 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable) // Вимкнення CSRF для REST API
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**").permitAll() // Дозволити маршрути аутентифікації
+                        .requestMatchers("/h2-console/**").permitAll()
                         .anyRequest().authenticated() // Усі інші маршрути вимагають аутентифікації
                 )
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class) // Додати JWT-фільтр
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Без сесій
+                )
+                //для работы с Н2 консолью
+                .headers(headers -> headers
+                        .httpStrictTransportSecurity(HeadersConfigurer.HstsConfig::disable)
                 );
 
         return http.build();
