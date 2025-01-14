@@ -5,11 +5,11 @@ import com.example.ShortenerProject.shortUrl.ShortUrlRepository;
 import net.datafaker.Faker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
 public class ShortUrlCreatorTest {
@@ -48,7 +48,7 @@ public class ShortUrlCreatorTest {
 
     @Test
     void testGenerateUniqueShortUrl() {
-        when(shortUrlRepository.existsByShortUrl(anyString())).thenReturn(false);
+        when(shortUrlRepository.existsByShortUrl(ArgumentMatchers.anyString())).thenReturn(false);
 
         String uniqueShortUrl = shortUrlCreator.generateUniqueShortUrl();
 
@@ -56,7 +56,7 @@ public class ShortUrlCreatorTest {
         assertEquals(8, uniqueShortUrl.length(), "Unique Short URL should have a length of 8 characters");
         System.out.println("Generated Unique Short URL: " + uniqueShortUrl);
 
-        verify(shortUrlRepository, atLeastOnce()).existsByShortUrl(anyString());
+        verify(shortUrlRepository, atLeastOnce()).existsByShortUrl(ArgumentMatchers.anyString());
     }
 
 }

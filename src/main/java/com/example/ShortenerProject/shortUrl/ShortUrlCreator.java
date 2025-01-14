@@ -1,8 +1,6 @@
 package com.example.ShortenerProject.shortUrl;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Random;
@@ -40,9 +38,9 @@ public class ShortUrlCreator {
      */
     public String generateUniqueShortUrl() {
         String shortUrl;
-        do{
+        do {
             shortUrl = generateShortUrl();
-        }while(shortUrlRepository.existsByShortUrl(shortUrl));
+        } while (shortUrlRepository.existsByShortUrl(shortUrl));
         return shortUrl;
     }
 

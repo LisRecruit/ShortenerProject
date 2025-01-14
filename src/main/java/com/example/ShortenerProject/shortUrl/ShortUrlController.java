@@ -39,7 +39,6 @@ public class ShortUrlController {
 
         // Generate unique short URL
         String shortUrl = shortUrlCreator.generateUniqueShortUrl();
-
         // Create ShortUrl object
         ShortUrl newShortUrl = new ShortUrl();
         newShortUrl.setShortUrl(shortUrl);
@@ -147,7 +146,7 @@ public class ShortUrlController {
      *         or a {@link ResponseEntity} with status 404 if the original URL does not exist or does not belong to the user
      */
     @GetMapping("/search")
-    public ResponseEntity<ShortUrl> findOriginalUrl(@RequestParam String originUrl, @RequestParam User user) {
+    public ResponseEntity<ShortUrl> findOriginalUrl(@RequestParam String originUrl, @RequestAttribute User user) {
         Optional<ShortUrl> url = shortUrlRepository.findAll()
                 .stream()
                 .filter(u->u.getOriginUrl().equals(originUrl) && u.getUser().getId() == user.getId())

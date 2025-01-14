@@ -51,7 +51,7 @@ class ShortUrlControllerTest {
         mockUser.setUsername(faker.name().username());
 
         when(shortUrlCreator.isValidUrl(originUrl)).thenReturn(true);
-        when(shortUrlCreator.generateShortUrl()).thenReturn(shortUrl);
+        when(shortUrlCreator.generateUniqueShortUrl()).thenReturn(shortUrl);
 
         ShortUrl createdShortUrl = new ShortUrl();
         createdShortUrl.setShortUrl(shortUrl);
@@ -126,7 +126,7 @@ class ShortUrlControllerTest {
         when(shortUrlRepository.findAll()).thenReturn(List.of(mockShortUrl));
 
         mockMvc.perform(get("/api/v1/short-urls/" + shortUrl+"/stats")
-                .requestAttr("user", mockUser))
+                        .requestAttr("user", mockUser))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.shortUrl").value(shortUrl))
                 .andExpect(jsonPath("$.countOfTransition").value(5L));
@@ -147,10 +147,10 @@ class ShortUrlControllerTest {
         when(shortUrlRepository.findAll()).thenReturn(List.of(mockShortUrl));
 
         mockMvc.perform(get("/api/v1/short-urls/search")
-                .param("originUrl", originalUrl)
-                .requestAttr("user", mockUser))
+                        .param("originUrl", originalUrl)
+                        .requestAttr("user", mockUser))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.shortUrl").value(originalUrl));
+                .andExpect(jsonPath("$.shortUrl").value(mockShortUrl.getShortUrl()));
     }
 
     @Test
@@ -182,8 +182,8 @@ class ShortUrlControllerTest {
         when(shortUrlRepository.findAll()).thenReturn(List.of());
 
         mockMvc.perform(get("/api/v1/short-urls/search")
-                    .param("originUrl", originUrl)
-                    .requestAttr("user", mockUser))
+                        .param("originUrl", originUrl)
+                        .requestAttr("user", mockUser))
                 .andExpect(status().isNotFound());
     }
 }
