@@ -1,6 +1,6 @@
-package com.example.ShortenerProject.user;
+package com.example.shortenerProject.user;
 
-import com.example.ShortenerProject.shortUrl.ShortUrl;
+import com.example.shortenerProject.shortUrl.ShortUrl;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

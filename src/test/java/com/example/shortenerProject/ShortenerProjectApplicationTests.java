@@ -1,4 +1,4 @@
-package com.example.ShortenerProject;
+package com.example.shortenerProject;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

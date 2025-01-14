@@ -1,4 +1,4 @@
-package com.example.ShortenerProject.security;
+package com.example.shortenerProject.security;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;

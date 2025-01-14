@@ -1,4 +1,4 @@
-package com.example.ShortenerProject.user.dto.request;
+package com.example.shortenerProject.user.dto.request;
 
 import lombok.Builder;
 

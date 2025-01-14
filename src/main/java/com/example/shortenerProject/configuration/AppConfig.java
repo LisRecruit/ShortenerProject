@@ -1,4 +1,4 @@
-package com.example.ShortenerProject.configuration;
+package com.example.shortenerProject.configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;

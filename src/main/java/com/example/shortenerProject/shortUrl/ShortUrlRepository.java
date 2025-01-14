@@ -1,4 +1,4 @@
-package com.example.ShortenerProject.shortUrl;
+package com.example.shortenerProject.shortUrl;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

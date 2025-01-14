@@ -1,11 +1,11 @@
-package com.example.ShortenerProject.user;
+package com.example.shortenerProject.user;
 
-import com.example.ShortenerProject.security.JwtUtil;
-import com.example.ShortenerProject.user.dto.request.LoginRequest;
-import com.example.ShortenerProject.user.dto.request.UserCreateRequest;
-import com.example.ShortenerProject.user.dto.response.AuthResponse;
-import com.example.ShortenerProject.user.dto.response.RegistrationResponse;
-import com.example.ShortenerProject.user.dto.response.UserResponse;
+import com.example.shortenerProject.security.JwtUtil;
+import com.example.shortenerProject.user.dto.request.LoginRequest;
+import com.example.shortenerProject.user.dto.request.UserCreateRequest;
+import com.example.shortenerProject.user.dto.response.AuthResponse;
+import com.example.shortenerProject.user.dto.response.RegistrationResponse;
+import com.example.shortenerProject.user.dto.response.UserResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
