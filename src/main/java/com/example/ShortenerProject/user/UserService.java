@@ -17,7 +17,7 @@ public class UserService {
     private static final String NOT_FOUND=" not found";
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-//    private final PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public String createUser(UserCreateRequest request) {
@@ -27,10 +27,10 @@ public class UserService {
 
         User user = User.builder()
                 .username(request.username())
-                .password(request.password()) //додати passwordEncoder з SecurityConfig
+                .password(passwordEncoder.encode(request.password())) //додати passwordEncoder з SecurityConfig
                 .build();
         userRepository.save(user);
-        return "User created";
+        return "User with username " + request.username() + " created";
     }
 
     public Page<UserResponse> getAllUsers(PageRequest pageRequest) {
@@ -46,11 +46,11 @@ public class UserService {
         return userMapper.toUserResponse(user);
     }
 
-    public UserResponse getUserByUsername(String username) {
-        return userMapper.toUserResponse(
-                userRepository.findByUsername(username)
-                        .orElseThrow(() -> new EntityNotFoundException("User with username " + username + NOT_FOUND)));
+    public User getUserByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException("User with username " + username + " NOT FOUND"));
     }
+
 
     @Transactional
     public UserResponse updateUser(Long id, UserUpdateRequest request) {
@@ -59,6 +59,7 @@ public class UserService {
         user.setUsername(request.username());
         return userMapper.toUserResponse(user);
     }
+
 
     public void deleteUser(Long id) {
         userRepository.deleteById(id);

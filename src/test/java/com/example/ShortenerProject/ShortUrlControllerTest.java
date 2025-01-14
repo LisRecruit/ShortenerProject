@@ -1,9 +1,6 @@
 package com.example.ShortenerProject;
 
-import com.example.ShortenerProject.shortUrl.ShortUrl;
-import com.example.ShortenerProject.shortUrl.ShortUrlController;
-import com.example.ShortenerProject.shortUrl.ShortUrlCreator;
-import com.example.ShortenerProject.shortUrl.ShortUrlRepository;
+import com.example.ShortenerProject.shortUrl.*;
 import com.example.ShortenerProject.user.User;
 import net.datafaker.Faker;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class ShortUrlControllerTest {
 
     @Mock
-    private ShortUrlRepository shortUrlRepository;
+    private ShortUrlService shortUrlService;
 
     @Mock
     private ShortUrlCreator shortUrlCreator;
@@ -58,7 +55,7 @@ class ShortUrlControllerTest {
         createdShortUrl.setOriginUrl(originUrl);
         createdShortUrl.setUser(mockUser);
 
-        when(shortUrlRepository.save(any())).thenReturn(createdShortUrl);
+        when(shortUrlService.createShortUrl(any())).thenReturn(createdShortUrl);
 
         String requestBody = String.format("""
                 {
@@ -97,7 +94,7 @@ class ShortUrlControllerTest {
         shortUrl2.setUser(mockUser);
 
         List<ShortUrl> userUrls = List.of(shortUrl1, shortUrl2);
-        when(shortUrlRepository.findAll()).thenReturn(userUrls);
+        when(shortUrlService.findAllShortUrls()).thenReturn(userUrls);
 
         // Act and Assert
         mockMvc.perform(get("/api/v1/short-urls")
@@ -123,7 +120,7 @@ class ShortUrlControllerTest {
         mockShortUrl.setCountOfTransition(5L);
         mockShortUrl.setUser(mockUser);
 
-        when(shortUrlRepository.findAll()).thenReturn(List.of(mockShortUrl));
+        when(shortUrlService.findAllShortUrls()).thenReturn(List.of(mockShortUrl));
 
         mockMvc.perform(get("/api/v1/short-urls/" + shortUrl+"/stats")
                         .requestAttr("user", mockUser))
@@ -144,7 +141,7 @@ class ShortUrlControllerTest {
         mockShortUrl.setOriginUrl(originalUrl);
         mockShortUrl.setUser(mockUser);
 
-        when(shortUrlRepository.findAll()).thenReturn(List.of(mockShortUrl));
+        when(shortUrlService.findAllShortUrls()).thenReturn(List.of(mockShortUrl));
 
         mockMvc.perform(get("/api/v1/short-urls/search")
                         .param("originUrl", originalUrl)
@@ -159,7 +156,7 @@ class ShortUrlControllerTest {
         User mockUser = new User();
         mockUser.setId(1L);
 
-        when(shortUrlRepository.findAll()).thenReturn(List.of());
+        when(shortUrlService.findAllShortUrls()).thenReturn(List.of());
 
         mockMvc.perform(get("/api/v1/short-urls/" + shortUrl + "/stats")
                         .requestAttr("user", mockUser))
@@ -179,7 +176,7 @@ class ShortUrlControllerTest {
         mockShortUrl.setOriginUrl(originUrl);
         mockShortUrl.setUser(mockUser);
 
-        when(shortUrlRepository.findAll()).thenReturn(List.of());
+        when(shortUrlService.findAllShortUrls()).thenReturn(List.of());
 
         mockMvc.perform(get("/api/v1/short-urls/search")
                         .param("originUrl", originUrl)

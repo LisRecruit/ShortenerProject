@@ -14,11 +14,11 @@ import java.util.Optional;
 @RequestMapping("/api/v1/short-urls")
 public class ShortUrlController {
 
-    private final ShortUrlRepository shortUrlRepository;
+    private final ShortUrlService shortUrlService;
     private final ShortUrlCreator shortUrlCreator;
 
-    public ShortUrlController(ShortUrlRepository shortUrlRepository, ShortUrlCreator shortUrlCreator) {
-        this.shortUrlRepository = shortUrlRepository;
+    public ShortUrlController(ShortUrlService shortUrlService, ShortUrlCreator shortUrlCreator) {
+        this.shortUrlService = shortUrlService;
         this.shortUrlCreator = shortUrlCreator;
     }
 
@@ -49,7 +49,7 @@ public class ShortUrlController {
         newShortUrl.setUser(user);
 
         // Save to repository
-        shortUrlRepository.save(newShortUrl);
+        shortUrlService.createShortUrl(newShortUrl);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(newShortUrl);
     }
@@ -63,7 +63,7 @@ public class ShortUrlController {
      */
     @GetMapping
     public ResponseEntity<List<ShortUrl>> getAllShortUrls(@RequestAttribute User user) {
-        List<ShortUrl> userUrls = shortUrlRepository.findAll()
+        List<ShortUrl> userUrls = shortUrlService.findAllShortUrls()
                 .stream()
                 .filter(url -> url.getUser().getId() == user.getId())
                 .toList();
@@ -80,12 +80,12 @@ public class ShortUrlController {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteShortUrl(@PathVariable long id, @RequestAttribute User user) {
-        Optional<ShortUrl> shortUrl = shortUrlRepository.findById(id);
+        Optional<ShortUrl> shortUrl = shortUrlService.findShortUrlById(id);
         if (shortUrl.isEmpty() || shortUrl.get().getUser().getId() != user.getId()) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        shortUrlRepository.delete(shortUrl.get());
+        shortUrlService.deleteShortUrl(shortUrl.get());
         return ResponseEntity.noContent().build();
     }
 
@@ -98,7 +98,7 @@ public class ShortUrlController {
      */
     @GetMapping("/{shortUrl}")
     public ResponseEntity<Void> redirect(@PathVariable String shortUrl) {
-        Optional<ShortUrl> foundUrl = shortUrlRepository.findAll()
+        Optional<ShortUrl> foundUrl = shortUrlService.findAllShortUrls()
                 .stream()
                 .filter(url -> url.getShortUrl().equals(shortUrl))
                 .findFirst();
@@ -109,7 +109,7 @@ public class ShortUrlController {
 
         ShortUrl url = foundUrl.get();
         url.setCountOfTransition(url.getCountOfTransition() + 1);
-        shortUrlRepository.save(url);
+        shortUrlService.updateShortUrl(url);
 
         return ResponseEntity.status(HttpStatus.FOUND)
                 .header("Location", url.getOriginUrl())
@@ -127,7 +127,7 @@ public class ShortUrlController {
 
     @GetMapping("/{shortUrl}/stats")
     public ResponseEntity<ShortUrl> getShortUrlStats(@PathVariable String shortUrl , @RequestAttribute User user) {
-        Optional<ShortUrl> url = shortUrlRepository.findAll()
+        Optional<ShortUrl> url = shortUrlService.findAllShortUrls()
                 .stream()
                 .filter(u->u.getShortUrl().equals(shortUrl) && u.getUser().getId() == user.getId())
                 .findFirst();
@@ -147,7 +147,7 @@ public class ShortUrlController {
      */
     @GetMapping("/search")
     public ResponseEntity<ShortUrl> findOriginalUrl(@RequestParam String originUrl, @RequestAttribute User user) {
-        Optional<ShortUrl> url = shortUrlRepository.findAll()
+        Optional<ShortUrl> url = shortUrlService.findAllShortUrls()
                 .stream()
                 .filter(u->u.getOriginUrl().equals(originUrl) && u.getUser().getId() == user.getId())
                 .findFirst();
