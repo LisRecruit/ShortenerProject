@@ -1,8 +1,8 @@
-package com.example.shortenerProject.user;
+package com.example.ShortenerProject.user;
 
-import com.example.shortenerProject.user.dto.request.UserCreateRequest;
-import com.example.shortenerProject.user.dto.response.UserResponse;
-import com.example.shortenerProject.user.dto.request.UserUpdateRequest;
+import com.example.ShortenerProject.user.dto.request.UserCreateRequest;
+import com.example.ShortenerProject.user.dto.response.UserResponse;
+import com.example.ShortenerProject.user.dto.request.UserUpdateRequest;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

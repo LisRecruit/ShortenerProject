@@ -1,4 +1,4 @@
-package com.example.shortenerProject.user;
+package com.example.ShortenerProject.user;
 
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;

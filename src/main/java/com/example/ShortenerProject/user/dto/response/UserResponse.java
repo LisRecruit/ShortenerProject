@@ -1,4 +1,4 @@
-package com.example.shortenerProject.user.dto.response;
+package com.example.ShortenerProject.user.dto.response;
 
 import lombok.Builder;
 

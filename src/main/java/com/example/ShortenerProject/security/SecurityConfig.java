@@ -1,7 +1,7 @@
-package com.example.shortenerProject.security;
+package com.example.ShortenerProject.security;
 
-import com.example.shortenerProject.user.User;
-import com.example.shortenerProject.user.UserService;
+import com.example.ShortenerProject.user.User;
+import com.example.ShortenerProject.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

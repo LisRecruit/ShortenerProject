@@ -1,7 +1,7 @@
-package com.example.shortenerProject.user;
+package com.example.ShortenerProject.user;
 
 
-import com.example.shortenerProject.user.dto.response.UserResponse;
+import com.example.ShortenerProject.user.dto.response.UserResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.NullValuePropertyMappingStrategy;

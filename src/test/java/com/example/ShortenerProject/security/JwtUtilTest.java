@@ -1,4 +1,4 @@
-package com.example.shortenerProject.security;
+package com.example.ShortenerProject.security;
 
 import io.jsonwebtoken.Claims;
 import org.junit.jupiter.api.BeforeEach;
