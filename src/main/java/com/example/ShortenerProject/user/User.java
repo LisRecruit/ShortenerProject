@@ -30,4 +30,10 @@ public class User {
     @Builder.Default
     @OneToMany(mappedBy = "user")
     List<ShortUrl> urls = new ArrayList<>();
+
+    public User(long id, String username, String password) {
+        this.id = id;
+        this.username = username;
+        this.password = password;
+    }
 }
