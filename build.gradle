@@ -55,6 +55,9 @@ dependencies {
 	implementation "jakarta.transaction:jakarta.transaction-api"
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation group: 'jakarta.validation', name: 'jakarta.validation-api', version: '3.1.0'
+	testImplementation group: 'org.mockito', name: 'mockito-core', version: '5.15.2'
+	testImplementation group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
+	implementation group: 'net.datafaker', name: 'datafaker', version: '2.4.2'
 }
 
 dependencyManagement {

@@ -1,6 +1,7 @@
 package com.example.ShortenerProject.shortUrl;
 
 import com.example.ShortenerProject.user.User;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -13,8 +14,10 @@ public class ShortUrl {
     private long id;
 
     @Column(name = "short_url", unique = true, nullable = false)
+    @JsonProperty("shortUrl")
     private String shortUrl;
 
+    @JsonProperty("originUrl")
     @Column(name = "origin_url", nullable = false)
     private String originUrl;
 

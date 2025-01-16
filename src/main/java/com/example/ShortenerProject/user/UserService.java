@@ -59,6 +59,7 @@ public class UserService {
         return userMapper.toUserResponse(user);
     }
 
+
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
     }
