@@ -48,9 +48,8 @@ public class UserService {
 
     public User getUserByUsername(String username) {
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new EntityNotFoundException("User with username " + username + " NOT FOUND"));
+                .orElseThrow(() -> new EntityNotFoundException("User with username " + username + NOT_FOUND));
     }
-
 
     @Transactional
     public UserResponse updateUser(Long id, UserUpdateRequest request) {
