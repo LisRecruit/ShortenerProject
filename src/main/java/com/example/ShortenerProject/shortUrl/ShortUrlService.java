@@ -34,14 +34,36 @@ public class ShortUrlService {
         shortUrl.setUser(user);
 
         ShortUrl savedShortUrl = shortUrlRepository.save(shortUrl);
-        return mapToResponse(savedShortUrl);
+        return convertToDto(savedShortUrl);
     }
 
     @Transactional(readOnly = true)
     public List<ShortUrlResponse> findAllShortUrlsByUser(User user) {
         return shortUrlRepository.findAll().stream()
                 .filter(url -> Objects.equals(url.getUser().getId(), user.getId()))
-                .map(this::mapToResponse)
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<ShortUrlResponse> findAllShortUrls() {
+        return shortUrlRepository.findAll().stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+
+    @Transactional(readOnly = true)
+    public Optional<ShortUrlResponse> findShortUrlById(long id) {
+        return shortUrlRepository.findById(id)
+                .map(this::convertToDto);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ShortUrlResponse> findByUser(User user) {
+        return shortUrlRepository.findAll().stream()
+                .filter(url -> Objects.equals(url.getUser().getId(), user.getId()))
+                .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
 
@@ -49,7 +71,7 @@ public class ShortUrlService {
     public Optional<ShortUrlResponse> findByIdAndUser(long id, User user) {
         return shortUrlRepository.findById(id)
                 .filter(url -> Objects.equals(url.getUser().getId(), user.getId()))
-                .map(this::mapToResponse);
+                .map(this::convertToDto);
     }
 
     @Transactional
@@ -60,8 +82,17 @@ public class ShortUrlService {
     @Transactional(readOnly = true)
     public Optional<ShortUrlResponse> findByShortUrl(String shortUrl) {
         return shortUrlRepository.findByShortUrl(shortUrl)
-                .map(this::mapToResponse);
+                .map((Object entity) -> convertToDto((ShortUrl) entity));
     }
+
+    @Transactional(readOnly = true)
+    public Long getShortUrlStats(long id) {
+        ShortUrl shortUrl = shortUrlRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Short URL not found."));
+
+        return shortUrl.getCountOfTransition();
+    }
+
 
     @Transactional
     public void updateShortUrl(ShortUrlCreateRequest request, long id, User user) {
@@ -75,16 +106,17 @@ public class ShortUrlService {
         shortUrl.setDateOfExpiring(request.getDateOfExpiring());
 
         ShortUrl updatedShortUrl = shortUrlRepository.save(shortUrl);
-        mapToResponse(updatedShortUrl);
+        convertToDto(updatedShortUrl);
     }
 
-    private ShortUrlResponse mapToResponse(ShortUrl shortUrl) {
-        ShortUrlResponse response = new ShortUrlResponse();
-        response.setShortUrl(shortUrl.getShortUrl());
-        response.setOriginUrl(shortUrl.getOriginUrl());
-        response.setDateOfCreating(shortUrl.getDateOfCreating());
-        response.setDateOfExpiring(shortUrl.getDateOfExpiring());
-        response.setUserName(shortUrl.getUser().getUsername());
-        return response;
+
+    private ShortUrlResponse convertToDto(ShortUrl shortUrl) {
+        return ShortUrlResponse.builder()
+                .shortUrl(shortUrl.getShortUrl())
+                .originUrl(shortUrl.getOriginUrl())
+                .dateOfCreating(shortUrl.getDateOfCreating())
+                .dateOfExpiring(shortUrl.getDateOfExpiring())
+                .userName(shortUrl.getUser().getUsername())
+                .build();
     }
 }
