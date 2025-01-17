@@ -1,7 +1,11 @@
 package com.example.ShortenerProject;
 
 import com.example.ShortenerProject.shortUrl.*;
+import com.example.ShortenerProject.shortUrl.dto.ShortUrlCreateRequest;
+import com.example.ShortenerProject.shortUrl.dto.ShortUrlResponse;
 import com.example.ShortenerProject.user.User;
+import com.example.ShortenerProject.user.UserRepository;
+import com.example.ShortenerProject.utils.Validator;
 import net.datafaker.Faker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,6 +29,11 @@ class ShortUrlControllerTest {
 
     @Mock
     private ShortUrlCreator shortUrlCreator;
+    @Mock
+    private Validator validator;
+    @Mock
+    private UserRepository userRepository;
+
 
     @InjectMocks
     private ShortUrlController shortUrlController;
@@ -43,19 +52,30 @@ class ShortUrlControllerTest {
         // Arrange
         String originUrl = faker.internet().url();
         String shortUrl = faker.regexify("[A-Za-z0-9]{8}");
+        Long userId = 1L;
         User mockUser = new User();
-        mockUser.setId(1L);
+        mockUser.setId(userId);
         mockUser.setUsername(faker.name().username());
 
-        when(shortUrlCreator.isValidUrl(originUrl)).thenReturn(true);
+
+        when(validator.isValidUrl(originUrl)).thenReturn(true);
         when(shortUrlCreator.generateUniqueShortUrl()).thenReturn(shortUrl);
+        when(userRepository.findById(userId)).thenReturn(java.util.Optional.of(mockUser));
 
-        ShortUrl createdShortUrl = new ShortUrl();
-        createdShortUrl.setShortUrl(shortUrl);
-        createdShortUrl.setOriginUrl(originUrl);
-        createdShortUrl.setUser(mockUser);
+        ShortUrlCreateRequest request = new ShortUrlCreateRequest();
+        request.setOriginUrl(originUrl);
+        request.setUser(userId);
+        request.setDateOfExpiring("2025-12-31T23:59:59");
 
-        when(shortUrlService.createShortUrl(any())).thenReturn(createdShortUrl);
+        ShortUrlResponse createdShortUrlResponse = ShortUrlResponse.builder()
+                .shortUrl(shortUrl)
+                .originUrl(originUrl)
+                .dateOfCreating("2025-01-17T00:00:00")
+                .dateOfExpiring("2025-12-31T23:59:59")
+                .user(userId)
+                .build();
+
+        when(shortUrlService.createShortUrl(any(ShortUrlCreateRequest.class))).thenReturn(createdShortUrlResponse);
 
         String requestBody = String.format("""
                 {
