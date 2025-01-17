@@ -44,13 +44,4 @@ public class ShortUrlCreator {
         return shortUrl;
     }
 
-    /**
-     * Checks the validity of the original URL.
-     *
-     * @param url Original URL
-     * @return true if the URL is valid, otherwise false
-     */
-    public boolean isValidUrl(String url) {
-        return url.startsWith("http://") || url.startsWith("https://");
-    }
 }

@@ -5,15 +5,14 @@ import com.example.ShortenerProject.shortUrl.dto.ShortUrlResponse;
 import com.example.ShortenerProject.shortUrl.dto.ShortUrlStatsResponse;
 import com.example.ShortenerProject.user.User;
 import com.example.ShortenerProject.user.UserRepository;
+import com.example.ShortenerProject.utils.Validator;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,18 +22,21 @@ public class ShortUrlService {
     private final UserRepository userRepository;
     private final ShortUrlCreator shortUrlCreator;
     private final ShortUrlMapper shortUrlMapper;
+    private final Validator urlValidator;
     @Autowired
     public ShortUrlService(ShortUrlRepository shortUrlRepository, UserRepository userRepository, ShortUrlCreator shortUrlCreator
-    ,ShortUrlMapper shortUrlMapper) {
+    ,ShortUrlMapper shortUrlMapper, Validator urlValidator) {
         this.shortUrlRepository = shortUrlRepository;
         this.userRepository = userRepository;
         this.shortUrlCreator = shortUrlCreator;
         this.shortUrlMapper = shortUrlMapper;
+        this.urlValidator = urlValidator;
     }
 
     @Transactional
     public ShortUrlResponse createShortUrl(ShortUrlCreateRequest request) {
-        if (!shortUrlCreator.isValidUrl(request.getOriginUrl())) {
+
+        if (!urlValidator.isValidUrl(request.getOriginUrl())) {
             throw new IllegalArgumentException("Invalid origin URL: " + request.getOriginUrl());
         }
         User user = userRepository.findById(request.getUser())
