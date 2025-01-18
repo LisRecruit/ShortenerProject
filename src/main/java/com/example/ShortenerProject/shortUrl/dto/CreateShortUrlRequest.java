@@ -1,4 +1,4 @@
-package com.example.ShortenerProject.shortUrl;
+package com.example.ShortenerProject.shortUrl.dto;
 
 
 import jakarta.validation.constraints.NotBlank;
