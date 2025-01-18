@@ -4,8 +4,16 @@ plugins {
 	id 'io.spring.dependency-management' version '1.1.7'
 }
 
-group = 'com.example'
+group = 'com.example.ShortenerProject'
 version = '0.0.1-SNAPSHOT'
+
+jar {
+	manifest {
+		attributes(
+				'Main-Class': 'com.example.ShortenerProject.ShortenerProjectApplication' // Замість цього вкажіть повне ім'я вашого головного класу
+		)
+	}
+}
 
 java {
 	toolchain {
