@@ -3,7 +3,7 @@ package com.example.ShortenerProject.user;
 import com.example.ShortenerProject.user.dto.request.UserCreateRequest;
 import com.example.ShortenerProject.user.dto.response.UserResponse;
 import com.example.ShortenerProject.user.dto.request.UserUpdateRequest;
-import jakarta.persistence.EntityNotFoundException;
+import com.example.ShortenerProject.exception.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -48,9 +48,8 @@ public class UserService {
 
     public User getUserByUsername(String username) {
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new EntityNotFoundException("User with username " + username + " NOT FOUND"));
+                .orElseThrow(() -> new EntityNotFoundException("User with username " + username + NOT_FOUND));
     }
-
 
     @Transactional
     public UserResponse updateUser(Long id, UserUpdateRequest request) {
@@ -59,6 +58,7 @@ public class UserService {
         user.setUsername(request.username());
         return userMapper.toUserResponse(user);
     }
+
 
     public void deleteUser(Long id) {
         userRepository.deleteById(id);

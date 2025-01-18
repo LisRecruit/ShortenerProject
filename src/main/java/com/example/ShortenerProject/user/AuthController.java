@@ -6,6 +6,7 @@ import com.example.ShortenerProject.user.dto.request.UserCreateRequest;
 import com.example.ShortenerProject.user.dto.response.AuthResponse;
 import com.example.ShortenerProject.user.dto.response.RegistrationResponse;
 import com.example.ShortenerProject.user.dto.response.UserResponse;
+import com.example.ShortenerProject.utils.Validator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -48,6 +49,10 @@ public class AuthController {
     @PostMapping("/registration")
     public ResponseEntity<?> registration(@RequestBody UserCreateRequest request) {
         try {
+            if (!Validator.isValidPassword(request.password())) {
+                return ResponseEntity.status(400).body("Password must contain at least 8 characters, including digits, uppercase and lowercase letters.");
+            }
+
             String creationMessage = userService.createUser(request);
 
             authenticationManager.authenticate(
