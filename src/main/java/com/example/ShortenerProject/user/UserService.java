@@ -3,7 +3,7 @@ package com.example.ShortenerProject.user;
 import com.example.ShortenerProject.user.dto.request.UserCreateRequest;
 import com.example.ShortenerProject.user.dto.response.UserResponse;
 import com.example.ShortenerProject.user.dto.request.UserUpdateRequest;
-import jakarta.persistence.EntityNotFoundException;
+import com.example.ShortenerProject.exception.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
