@@ -1,0 +1,33 @@
+
+
+services:
+  app:
+    container_name: shortener-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: shortener-app:latest
+    ports:
+      - "9999:9999"
+    environment:
+       SPRING_PROFILES_ACTIVE: production
+    depends_on:
+      - database
+    networks:
+      - shortener-network
+
+  database:
+    container_name: shortener-db
+    image: postgres:15
+    environment:
+      POSTGRES_USER: shortener_user
+      POSTGRES_PASSWORD: shortener_password
+      POSTGRES_DB: shortener_db
+    ports:
+      - "5432:5432"
+    networks:
+      - shortener-network
+
+networks:
+  shortener-network:
+    driver: bridge
