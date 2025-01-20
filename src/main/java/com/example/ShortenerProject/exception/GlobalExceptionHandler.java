@@ -41,6 +41,7 @@ public class GlobalExceptionHandler {
     public ErrorResponse handleException(InvalidOriginUrlException exception) {
         return new ErrorResponse(HttpStatus.FORBIDDEN.name(), exception.getMessage());
     }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseBody
     @ResponseStatus(HttpStatus.BAD_REQUEST)
