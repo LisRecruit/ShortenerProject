@@ -8,18 +8,18 @@ services:
     ports:
       - "9999:9999"
     environment:
-       - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_PROFILES_ACTIVE=prod
     depends_on:
       - database
     networks:
       - shortener-network
   database:
     container_name: shortener-db
-    image: postgres:17
+    image: postgres:15
     environment:
-      - 'POSTGRES_USER=postgres'
-      - 'POSTGRES_PASSWORD=4602'
-      - 'POSTGRES_DB=url_shortener'
+      POSTGRES_USER: shortener_user
+      POSTGRES_PASSWORD: shortener_password
+      POSTGRES_DB: shortener_db
     ports:
       - "5432:5432"
     volumes:
