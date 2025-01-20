@@ -31,6 +31,14 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
+
+        //для работы с Н2 консолью
+        if (request.getRequestURI().contains("/h2-console")) {
+            chain.doFilter(request, response);
+            return;
+        }
+
+
         final String requestTokenHeader = request.getHeader("Authorization");
 
         String username = null;

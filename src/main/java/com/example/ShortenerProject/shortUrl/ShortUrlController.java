@@ -13,8 +13,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,6 +49,7 @@ public class ShortUrlController {
     public ResponseEntity<ShortUrlResponse> createShortUrl(@Valid @RequestBody ShortUrlCreateRequest request) {
         ShortUrlResponse response = shortUrlService.createShortUrl(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+
     }
 
     @Operation(
@@ -85,6 +88,7 @@ public class ShortUrlController {
         if (shortUrl.isEmpty()) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
+
         shortUrlService.deleteShortUrl(id);
         return ResponseEntity.noContent().build();
     }
@@ -102,6 +106,7 @@ public class ShortUrlController {
             }
     )
     @GetMapping("/{shortUrl}")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<Void> redirect(@PathVariable String shortUrl) {
         Optional<ShortUrl> foundUrl = shortUrlService.findAndRedirect(shortUrl);
         if (foundUrl.isEmpty()) {
@@ -128,6 +133,7 @@ public class ShortUrlController {
     @GetMapping("/{shortUrl}/stats")
     public ResponseEntity<ShortUrlStatsResponse> getShortUrlStats(@PathVariable String shortUrl, @RequestAttribute User user) {
         Optional<ShortUrlStatsResponse> stats = shortUrlService.getShortUrlStats(shortUrl, user);
+
         if (stats.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
@@ -156,7 +162,6 @@ public class ShortUrlController {
         return ResponseEntity.ok(originUrl.get());
     }
 }
-
 
 
 
