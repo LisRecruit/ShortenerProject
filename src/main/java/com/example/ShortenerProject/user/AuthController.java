@@ -30,7 +30,21 @@ public class AuthController {
     @PostMapping("/login")
     @Operation(
             summary = "User authentication",
-            description = "Accepts a username and password, verifies them, and returns a JWT token"
+            description = "Accepts a username and password, verifies them, and returns a JWT token",
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "200",
+                            description = "Successful authentication, returns JWT token",
+                            content = @io.swagger.v3.oas.annotations.media.Content(
+                                    mediaType = "application/json",
+                                    schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = AuthResponse.class)
+                            )
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "401",
+                            description = "Authentication failed due to incorrect username or password"
+                    )
+            }
     )
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         authenticationManager.authenticate(
@@ -47,7 +61,25 @@ public class AuthController {
     @PostMapping("/registration")
     @Operation(
             summary = "New user registration",
-            description = "Registers a new user with the provided data and returns a JWT token"
+            description = "Registers a new user with the provided data and returns a JWT token",
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "200",
+                            description = "User successfully registered and authenticated",
+                            content = @io.swagger.v3.oas.annotations.media.Content(
+                                    mediaType = "application/json",
+                                    schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = RegistrationResponse.class)
+                            )
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "400",
+                            description = "Validation failed for input data"
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "500",
+                            description = "Server error occurred during registration"
+                    )
+            }
     )
     public ResponseEntity<?> registration(@RequestBody UserCreateRequest request) {
         if (!Validator.isValidPassword(request.password())) {
