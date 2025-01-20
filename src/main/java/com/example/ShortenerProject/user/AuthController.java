@@ -8,8 +8,10 @@ import com.example.ShortenerProject.user.dto.response.RegistrationResponse;
 import com.example.ShortenerProject.user.dto.response.UserResponse;
 import com.example.ShortenerProject.utils.Validator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -26,15 +28,20 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.username(),
-                        request.password()
-                )
-        );
-        UserDetails userDetails = userDetailsService.loadUserByUsername(request.username());
-        String token = jwtUtil.generateToken(userDetails);
-        return ResponseEntity.ok(new AuthResponse(token));
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.username(),
+                            request.password()
+                    )
+            );
+            UserDetails userDetails = userDetailsService.loadUserByUsername(request.username());
+            String token = jwtUtil.generateToken(userDetails);
+            return ResponseEntity.ok(new AuthResponse(token));
+        } catch (BadCredentialsException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
+        }
+
     }
 
     @PostMapping("/registration")
@@ -65,8 +72,10 @@ public class AuthController {
                     .build();
 
             return ResponseEntity.ok(response);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(500).body("Internal Server Error");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(400).body(e.getMessage()); // Возвращаем ошибку 400 с сообщением
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Internal Server Error"); // Обработка других ошибок
         }
     }
 }

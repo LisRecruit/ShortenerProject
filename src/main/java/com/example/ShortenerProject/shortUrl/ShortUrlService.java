@@ -80,8 +80,11 @@ public class ShortUrlService {
 
     @Transactional(readOnly = true)
     public List<ShortUrlResponse> findByUser(User user) {
-        if (user == null || user.getId() == 0) {
-            throw new IllegalArgumentException("Invalid user or user ID");
+        if (user == null) {
+            throw new CantBeNullException(User.class);
+        }
+        if(user.getId()==0){
+            throw new CantBeNullException(User.class);
         }
         List<ShortUrl> shortUrls = shortUrlRepository.findByUserId(user.getId());
         if (shortUrls.isEmpty()) {

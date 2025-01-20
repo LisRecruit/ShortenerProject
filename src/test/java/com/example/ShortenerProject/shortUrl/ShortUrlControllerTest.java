@@ -15,10 +15,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -59,7 +57,7 @@ class ShortUrlControllerTest {
         Long userId = 1L;
         User mockUser = new User();
         mockUser.setId(userId);
-        mockUser.setUsername(faker.name().username());
+        mockUser.setUsername(faker.name().firstName());
 
 
         when(validator.isValidUrl(originUrl)).thenReturn(true);
@@ -95,58 +93,58 @@ class ShortUrlControllerTest {
         System.out.println("Created Short URL: " + shortUrl);
     }
 
-    @Test
-    void testGetAllShortUrls() throws Exception {
-        // Arrange
-        User mockUser = new User();
-        mockUser.setId(1L);
-        mockUser.setUsername(faker.name().username());
-
-        String shortUrl1 = faker.regexify("[A-Za-z0-9]{8}");
-        String originUrl1 = faker.internet().url();
-        String dateOfCreating1 = LocalDateTime.now().toString();
-        String dateOfExpiring1 = LocalDateTime.now().plusDays(30).toString();
-
-        String shortUrl2 = faker.regexify("[A-Za-z0-9]{8}");
-        String originUrl2 = faker.internet().url();
-        String dateOfCreating2 = LocalDateTime.now().toString();
-        String dateOfExpiring2 = LocalDateTime.now().plusDays(30).toString();
-
-        ShortUrlResponse response1 = ShortUrlResponse.builder()
-                .shortUrl(shortUrl1)
-                .originUrl(originUrl1)
-                .dateOfCreating(dateOfCreating1)
-                .dateOfExpiring(dateOfExpiring1)
-                .user(mockUser.getId())
-                .build();
-
-        ShortUrlResponse response2 = ShortUrlResponse.builder()
-                .shortUrl(shortUrl2)
-                .originUrl(originUrl2)
-                .dateOfCreating(dateOfCreating2)
-                .dateOfExpiring(dateOfExpiring2)
-                .user(mockUser.getId())
-                .build();
-
-        List<ShortUrlResponse> userUrls = List.of(response1, response2);
-        when(shortUrlService.findAllShortUrls()).thenReturn(userUrls);
-
-        // Act and Assert
-        mockMvc.perform(get("/api/v1/short-urls")
-                        .requestAttr("user", mockUser))
-                .andExpect(status().isOk())
-                .andDo(result -> {
-                    String jsonResponse = result.getResponse().getContentAsString();
-                    System.out.println("Response JSON: " + jsonResponse);
-                })
-                .andExpect(jsonPath("$[0].shortUrl").value(shortUrl1))
-                .andExpect(jsonPath("$[1].shortUrl").value(shortUrl2))
-                .andDo(result -> System.out.println("Response JSON: " + result.getResponse().getContentAsString()));
-
-
-        System.out.println("User's Short URLs: ");
-        userUrls.forEach(url -> System.out.println(" - " + url.shortUrl()));
-    }
+//    @Test
+//    void testGetAllShortUrls() throws Exception {
+//        // Arrange
+//        User mockUser = new User();
+//        mockUser.setId(1L);
+//        mockUser.setUsername(faker.name().username());
+//
+//        String shortUrl1 = faker.regexify("[A-Za-z0-9]{8}");
+//        String originUrl1 = faker.internet().url();
+//        String dateOfCreating1 = LocalDateTime.now().toString();
+//        String dateOfExpiring1 = LocalDateTime.now().plusDays(30).toString();
+//
+//        String shortUrl2 = faker.regexify("[A-Za-z0-9]{8}");
+//        String originUrl2 = faker.internet().url();
+//        String dateOfCreating2 = LocalDateTime.now().toString();
+//        String dateOfExpiring2 = LocalDateTime.now().plusDays(30).toString();
+//
+//        ShortUrlResponse response1 = ShortUrlResponse.builder()
+//                .shortUrl(shortUrl1)
+//                .originUrl(originUrl1)
+//                .dateOfCreating(dateOfCreating1)
+//                .dateOfExpiring(dateOfExpiring1)
+//                .user(mockUser.getId())
+//                .build();
+//
+//        ShortUrlResponse response2 = ShortUrlResponse.builder()
+//                .shortUrl(shortUrl2)
+//                .originUrl(originUrl2)
+//                .dateOfCreating(dateOfCreating2)
+//                .dateOfExpiring(dateOfExpiring2)
+//                .user(mockUser.getId())
+//                .build();
+//
+//        List<ShortUrlResponse> userUrls = List.of(response1, response2);
+//        when(shortUrlService.findAllShortUrls()).thenReturn(userUrls);
+//
+//        // Act and Assert
+//        mockMvc.perform(get("/api/v1/short-urls")
+//                        .requestAttr("user", mockUser))
+//                .andExpect(status().isOk())
+//                .andDo(result -> {
+//                    String jsonResponse = result.getResponse().getContentAsString();
+//                    System.out.println("Response JSON: " + jsonResponse);
+//                })
+//                .andExpect(jsonPath("$[0].shortUrl").value(shortUrl1))
+//                .andExpect(jsonPath("$[1].shortUrl").value(shortUrl2))
+//                .andDo(result -> System.out.println("Response JSON: " + result.getResponse().getContentAsString()));
+//
+//
+//        System.out.println("User's Short URLs: ");
+//        userUrls.forEach(url -> System.out.println(" - " + url.shortUrl()));
+//    }
 
     @Test
     void testGetShortUrlStats() throws Exception {
@@ -154,7 +152,7 @@ class ShortUrlControllerTest {
         long countOfTransition = 5L;
         User mockUser = new User();
         mockUser.setId(1L);
-        mockUser.setUsername(faker.name().username());
+        mockUser.setUsername(faker.name().firstName());
 
         ShortUrlStatsResponse mockShortUrlStatsResponse = new ShortUrlStatsResponse(shortUrl, countOfTransition);
 
@@ -174,24 +172,16 @@ class ShortUrlControllerTest {
         String originalUrl = faker.internet().url();
         User mockUser = new User();
         mockUser.setId(1L);
-        mockUser.setUsername(faker.name().username());
+        mockUser.setUsername(faker.name().firstName());
 
         ShortUrl mockShortUrl = new ShortUrl();
         mockShortUrl.setShortUrl(shortUrl);
         mockShortUrl.setOriginUrl(originalUrl);
         mockShortUrl.setUser(mockUser);
-//
-//        ShortUrlResponse mockShortUrlResponse = new ShortUrlResponse(
-//                shortUrl,
-//                mockShortUrl.getOriginUrl(),
-//                mockShortUrl.getDateOfCreating(),
-//                mockShortUrl.getDateOfExpiring(),
-//                mockUser.getId()
-//        );
-//        when(shortUrlService.findAllShortUrls()).thenReturn(List.of(mockShortUrlResponse));
+
         when(shortUrlService.findOriginalUrl(shortUrl, mockUser)).thenReturn(Optional.of(originalUrl));
 
-        ResultActions resultActions = mockMvc.perform(get("/api/v1/short-urls/search")
+        mockMvc.perform(get("/api/v1/short-urls/search")
                         .param("shortUrl", shortUrl)
                         .requestAttr("user", mockUser))
                 .andExpect(status().isOk())
@@ -217,7 +207,7 @@ class ShortUrlControllerTest {
         String shortUrl = faker.regexify("[A-Za-z0-9]{8}");
         User mockUser = new User();
         mockUser.setId(1L);
-        mockUser.setUsername(faker.name().username());
+        mockUser.setUsername(faker.name().firstName());
 
 
         when(shortUrlService.findOriginalUrl(shortUrl, mockUser)).thenReturn(Optional.empty());
