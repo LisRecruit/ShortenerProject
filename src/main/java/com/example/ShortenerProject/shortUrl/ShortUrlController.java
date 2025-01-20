@@ -7,12 +7,10 @@ import com.example.ShortenerProject.user.User;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/short-urls")
@@ -33,7 +31,7 @@ public class ShortUrlController {
      * @param request data for URL creation
      * @return shortened URL
      */
-//    Доступно тільки зареєстрованим користувачам
+
     @PostMapping
     public ResponseEntity<ShortUrlResponse> createShortUrl(@Valid @RequestBody ShortUrlCreateRequest request) {
         ShortUrlResponse response = shortUrlService.createShortUrl(request);
@@ -63,8 +61,7 @@ public class ShortUrlController {
      * @param user current user
      * @return operation status
      */
-    //    Доступно тільки зареєстрованим користувачам
-    // доступно тільки власнику
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteShortUrl(@PathVariable long id, @RequestAttribute User user) {
         Optional<ShortUrlResponse> shortUrl = shortUrlService.findByIdAndUser(id, user);
@@ -83,8 +80,9 @@ public class ShortUrlController {
      * @param shortUrl short URL
      * @return redirect to the original URL
      */
-//    доступно всім
+
     @GetMapping("/{shortUrl}")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<Void> redirect(@PathVariable String shortUrl) {
         Optional<ShortUrl> foundUrl = shortUrlService.findAndRedirect(shortUrl);
 
@@ -105,7 +103,7 @@ public class ShortUrlController {
      * @return a {@link ResponseEntity} containing the {@link ShortUrl} object if found,
      *         or a {@link ResponseEntity} with status 404 if the URL does not exist or does not belong to the user
      */
-//    Доступно тільки зареєстрованим користувачам
+
     @GetMapping("/{shortUrl}/stats")
     public ResponseEntity<ShortUrlStatsResponse> getShortUrlStats(@PathVariable String shortUrl , @RequestAttribute User user) {
         Optional<ShortUrlStatsResponse> stats = shortUrlService.getShortUrlStats(shortUrl, user);
@@ -119,22 +117,11 @@ public class ShortUrlController {
     /**
      * Finds the original URL based on the provided short URL, ensuring it belongs to the authenticated user.
      *
-     * @param originUrl the original URL to search for
      * @param user the current authenticated user making the request
      * @return a {@link ResponseEntity} containing the {@link ShortUrl} object if found,
      *         or a {@link ResponseEntity} with status 404 if the original URL does not exist or does not belong to the user
      */
-//    @GetMapping("/search")
-//    public ResponseEntity<ShortUrl> findOriginalUrl(@RequestParam String originUrl, @RequestAttribute User user) {
-//        Optional<ShortUrl> url = shortUrlService.findAllShortUrls()
-//                .stream()
-//                .filter(u->u.getOriginUrl().equals(originUrl) && u.getUser().getId() == user.getId())
-//                .findFirst();
-//        if (url.isEmpty()) {
-//            return ResponseEntity.notFound().build();
-//        }
-//        return ResponseEntity.ok(url.get());
-//    }
+
     @GetMapping("/search")
     public ResponseEntity<String> findOriginalUrl(@RequestParam String shortUrl, @RequestAttribute User user) {
         Optional<String> originUrl = shortUrlService.findOriginalUrl(shortUrl, user);
