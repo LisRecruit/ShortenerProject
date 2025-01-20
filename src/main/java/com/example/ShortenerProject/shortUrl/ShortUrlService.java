@@ -1,5 +1,8 @@
 package com.example.ShortenerProject.shortUrl;
 
+import com.example.ShortenerProject.exception.CantBeNullException;
+import com.example.ShortenerProject.exception.EntityNotFoundException;
+import com.example.ShortenerProject.exception.InvalidOriginUrlException;
 import com.example.ShortenerProject.shortUrl.dto.ShortUrlCreateRequest;
 import com.example.ShortenerProject.shortUrl.dto.ShortUrlResponse;
 import com.example.ShortenerProject.shortUrl.dto.ShortUrlStatsResponse;
@@ -37,10 +40,10 @@ public class ShortUrlService {
     public ShortUrlResponse createShortUrl(ShortUrlCreateRequest request) {
 
         if (!urlValidator.isValidUrl(request.getOriginUrl())) {
-            throw new IllegalArgumentException("Invalid origin URL: " + request.getOriginUrl());
+            throw new InvalidOriginUrlException("Invalid origin URL: " + request.getOriginUrl());
         }
         User user = userRepository.findById(request.getUser())
-                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + request.getUser()));
+                .orElseThrow(() -> new EntityNotFoundException(User.class,"id", request.getUser()));
 
         ShortUrl shortUrl = shortUrlMapper.toEntity(request);
         shortUrl.setShortUrl(shortUrlCreator.generateUniqueShortUrl());
@@ -52,8 +55,10 @@ public class ShortUrlService {
 
     @Transactional(readOnly = true)
     public List<ShortUrlResponse> findAllShortUrlsByUser(User user) {
-        return shortUrlRepository.findAll().stream()
-                .filter(url -> Objects.equals(url.getUser().getId(), user.getId()))
+        if (user == null) {
+            throw new CantBeNullException(User.class);
+        }
+        return shortUrlRepository.findByUserId(user.getId()).stream()
                 .map(shortUrlMapper::toResponse)
                 .collect(Collectors.toList());
     }
@@ -67,21 +72,31 @@ public class ShortUrlService {
 
 
     @Transactional(readOnly = true)
-    public Optional<ShortUrlResponse> findShortUrlById(long id) {
+    public ShortUrlResponse findShortUrlById(long id) {
         return shortUrlRepository.findById(id)
-                .map(shortUrlMapper::toResponse);
+                .map(shortUrlMapper::toResponse)
+                .orElseThrow(() -> new EntityNotFoundException("Short URL with ID " + id + " does not exist."));
     }
 
     @Transactional(readOnly = true)
     public List<ShortUrlResponse> findByUser(User user) {
-        return shortUrlRepository.findAll().stream()
-                .filter(url -> Objects.equals(url.getUser().getId(), user.getId()))
+        if (user == null || user.getId() == 0) {
+            throw new IllegalArgumentException("Invalid user or user ID");
+        }
+        List<ShortUrl> shortUrls = shortUrlRepository.findByUserId(user.getId());
+        if (shortUrls.isEmpty()) {
+            throw new EntityNotFoundException("No Short URLs found for the user with ID " + user.getId());
+        }
+        return shortUrls.stream()
                 .map(shortUrlMapper::toResponse)
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public Optional<ShortUrlResponse> findByIdAndUser(long id, User user) {
+        if (user == null || user.getId() <= 0) {
+            throw new IllegalArgumentException("Invalid user or user ID");
+        }
         return shortUrlRepository.findById(id)
                 .filter(shortUrl -> shortUrl.getUser().getId() == user.getId())
                 .map(shortUrlMapper::toResponse);
@@ -94,30 +109,38 @@ public class ShortUrlService {
 
     @Transactional(readOnly = true)
     public Optional<ShortUrlResponse> findByShortUrl(String shortUrl) {
+        if (shortUrl == null || shortUrl.trim().isEmpty()) {
+            throw new IllegalArgumentException("Short URL must not be null or empty");
+        }
         return shortUrlRepository.findByShortUrl(shortUrl)
                 .map(shortUrlMapper::toResponse);
     }
 
     @Transactional(readOnly = true)
     public Optional<ShortUrlStatsResponse> getShortUrlStats(String shortUrl, User user) {
-        Optional<ShortUrl> foundUrl = shortUrlRepository.findByShortUrl(shortUrl);
-
-        if (foundUrl.isPresent() && foundUrl.get().getUser().getId() == user.getId()) {
-            ShortUrl url = foundUrl.get();
-            return Optional.of(new ShortUrlStatsResponse(url.getShortUrl(), url.getCountOfTransition()));
+        if (shortUrl == null || shortUrl.trim().isEmpty()) {
+            throw new IllegalArgumentException("Short URL must not be null or empty");
         }
 
-        return Optional.empty();
+        return shortUrlRepository.findByShortUrl(shortUrl)
+                .filter(url -> url.getUser().getId() == user.getId())
+                .map(url -> new ShortUrlStatsResponse(url.getShortUrl(), url.getCountOfTransition()));
     }
 
 
     @Transactional
     public ShortUrlResponse  updateShortUrl(ShortUrlCreateRequest request, long id, User user) {
+        if (request.getOriginUrl() == null || request.getOriginUrl().trim().isEmpty()) {
+            throw new InvalidOriginUrlException("Origin URL cannot be null or empty");
+        }
         ShortUrl shortUrl = shortUrlRepository.findById(id)
                 .filter(url -> Objects.equals(url.getUser().getId(), user.getId()))
-                .orElseThrow(() -> new IllegalArgumentException("Short URL does not exist."));
+                .orElseThrow(() -> new EntityNotFoundException("Short URL with ID " + id + " does not exist or does not belong to the user."));
 
-        shortUrl.setShortUrl(shortUrlCreator.generateUniqueShortUrl());
+        if (!shortUrl.getOriginUrl().equals(request.getOriginUrl())) {
+            shortUrl.setShortUrl(shortUrlCreator.generateUniqueShortUrl());
+        }
+
         shortUrl.setOriginUrl(request.getOriginUrl());
         shortUrl.setDateOfCreating(request.getDateOfCreating());
         shortUrl.setDateOfExpiring(request.getDateOfExpiring());
@@ -129,15 +152,17 @@ public class ShortUrlService {
     @Transactional
     public Optional<ShortUrl> findAndRedirect(String shortUrl) {
         Optional<ShortUrl> foundUrl = shortUrlRepository.findByShortUrl(shortUrl);
-        if (foundUrl.isPresent()) {
-            ShortUrl url = foundUrl.get();
+        foundUrl.ifPresent(url -> {
             url.setCountOfTransition(url.getCountOfTransition() + 1);
             shortUrlRepository.save(url);
-        }
+        });
         return foundUrl;
     }
     @Transactional(readOnly = true)
     public Optional<String> findOriginalUrl(String shortUrl, User user) {
+        if (user == null || user.getId() == 0) {
+            return Optional.empty();
+        }
         return shortUrlRepository.findByShortUrl(shortUrl)
                 .filter(url -> url.getUser().getId() == user.getId())
                 .map(ShortUrl::getOriginUrl);

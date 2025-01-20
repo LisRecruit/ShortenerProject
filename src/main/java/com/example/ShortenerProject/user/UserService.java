@@ -41,20 +41,20 @@ public class UserService {
     public UserResponse getUserById(long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() ->
-                        new EntityNotFoundException("User with id " + id + NOT_FOUND));
+                        new EntityNotFoundException(User.class, "id", id));
 
         return userMapper.toUserResponse(user);
     }
 
     public User getUserByUsername(String username) {
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new EntityNotFoundException("User with username " + username + NOT_FOUND));
+                .orElseThrow(() -> new EntityNotFoundException(User.class, "this name", username));
     }
 
     @Transactional
     public UserResponse updateUser(Long id, UserUpdateRequest request) {
         User user = userRepository.findForUpdateById(id)
-                .orElseThrow(() -> new EntityNotFoundException("User with id " + id + NOT_FOUND));
+                .orElseThrow(() -> new EntityNotFoundException(User.class,"id",id));
         user.setUsername(request.username());
         return userMapper.toUserResponse(user);
     }
