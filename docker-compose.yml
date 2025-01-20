@@ -10,12 +10,11 @@ services:
     ports:
       - "9999:9999"
     environment:
-       SPRING_PROFILES_ACTIVE: production
+       - SPRING_PROFILES_ACTIVE=prod
     depends_on:
       - database
     networks:
       - shortener-network
-
   database:
     container_name: shortener-db
     image: postgres:15
@@ -25,9 +24,12 @@ services:
       POSTGRES_DB: shortener_db
     ports:
       - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - shortener-network
-
+volumes:
+  postgres_data:
 networks:
   shortener-network:
     driver: bridge

@@ -10,7 +10,7 @@ version = '0.0.1-SNAPSHOT'
 jar {
 	manifest {
 		attributes(
-				'Main-Class': 'com.example.ShortenerProject.ShortenerProjectApplication' // Замість цього вкажіть повне ім'я вашого головного класу
+				'Main-Class': 'com.example.ShortenerProject.ShortenerProjectApplication'
 		)
 	}
 }
