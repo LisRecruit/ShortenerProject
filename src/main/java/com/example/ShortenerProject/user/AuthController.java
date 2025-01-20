@@ -35,18 +35,29 @@ public class AuthController {
     @Operation(
             summary = "User authentication",
             description = "Accepts a username and password, verifies them, and returns a JWT token",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Login request with username and password",
+                    required = true,
+                    content = @Content(
+                            schema = @Schema(implementation = LoginRequest.class)
+                    )
+            ),
             responses = {
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                            responseCode = "200",
-                            description = "Successful authentication, returns JWT token",
-                            content = @io.swagger.v3.oas.annotations.media.Content(
-                                    mediaType = "application/json",
-                                    schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = AuthResponse.class)
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "Authentication failed. Invalid username or password.",
+                            content = @Content(
+                                    schema = @Schema(
+                                            example = "{\"error\": \"Invalid username or password\"}"
+                                    )
                             )
                     ),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                            responseCode = "401",
-                            description = "Authentication failed due to incorrect username or password"
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Authentication successful. JWT token returned.",
+                            content = @Content(
+                                    schema = @Schema(implementation = AuthResponse.class)
+                            )
                     )
             }
     )
@@ -64,30 +75,46 @@ public class AuthController {
 
     @PostMapping("/registration")
     @Operation(
-            summary = "New user registration",
-            description = "Registers a new user with the provided data and returns a JWT token",
+            summary = "User registration",
+            description = "Registers a new user and returns a JWT token",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Registration request with username and password",
+                    required = true,
+                    content = @Content(
+                            schema = @Schema(implementation = UserCreateRequest.class)
+                    )
+            ),
             responses = {
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                            responseCode = "200",
-                            description = "User successfully registered and authenticated",
-                            content = @io.swagger.v3.oas.annotations.media.Content(
-                                    mediaType = "application/json",
-                                    schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = RegistrationResponse.class)
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "Validation failed. Invalid input data.",
+                            content = @Content(
+                                    schema = @Schema(
+                                            example = "{\"error\": \"Password must contain at least 8 characters, including digits, uppercase and lowercase letters.\"}"
+                                    )
                             )
                     ),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                            responseCode = "400",
-                            description = "Validation failed for input data"
-                    ),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    @ApiResponse(
                             responseCode = "500",
-                            description = "Server error occurred during registration"
+                            description = "Server error during registration",
+                            content = @Content(
+                                    schema = @Schema(
+                                            example = "{\"error\": \"Internal Server Error\"}"
+                                    )
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Registration successful. JWT token returned.",
+                            content = @Content(
+                                    schema = @Schema(implementation = RegistrationResponse.class)
+                            )
                     )
             }
     )
     public ResponseEntity<?> registration(@RequestBody UserCreateRequest request) {
         if (!Validator.isValidPassword(request.password())) {
-            return ResponseEntity.status(400).body("Password must contain at least 8 characters, including digits, uppercase and lowercase letters.");
+            return ResponseEntity.status(400).body("{\"error\": \"Password must contain at least 8 characters, including digits, uppercase and lowercase letters.\"}");
         }
         try {
             String creationMessage = userService.createUser(request);
@@ -113,7 +140,7 @@ public class AuthController {
 
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            return ResponseEntity.status(500).body("Internal Server Error");
+            return ResponseEntity.status(500).body("{\"error\": \"Internal Server Error\"}");
         }
     }
 }
