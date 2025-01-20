@@ -1,7 +1,5 @@
-package com.example.ShortenerProject;
+package com.example.ShortenerProject.shortUrl;
 
-import com.example.ShortenerProject.shortUrl.ShortUrlCreator;
-import com.example.ShortenerProject.shortUrl.ShortUrlRepository;
 import com.example.ShortenerProject.utils.Validator;
 import net.datafaker.Faker;
 import org.junit.jupiter.api.BeforeEach;

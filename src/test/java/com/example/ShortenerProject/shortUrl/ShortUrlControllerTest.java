@@ -1,6 +1,5 @@
-package com.example.ShortenerProject;
+package com.example.ShortenerProject.shortUrl;
 
-import com.example.ShortenerProject.shortUrl.*;
 import com.example.ShortenerProject.shortUrl.dto.ShortUrlCreateRequest;
 import com.example.ShortenerProject.shortUrl.dto.ShortUrlResponse;
 import com.example.ShortenerProject.user.User;
