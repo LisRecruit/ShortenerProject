@@ -113,18 +113,33 @@ class ShortUrlControllerTest {
         shortUrl2.setOriginUrl(faker.internet().url());
         shortUrl2.setUser(mockUser);
 
-        List<ShortUrl> userUrls = List.of(shortUrl1, shortUrl2);
+        ShortUrlResponse response1 = new ShortUrlResponse(
+                shortUrl1.getShortUrl(),
+                shortUrl1.getOriginUrl(),
+                shortUrl1.getDateOfCreating(),
+                shortUrl1.getDateOfExpiring(),
+                shortUrl1.getUser().getId()
+        );
+        ShortUrlResponse response2 = new ShortUrlResponse(
+                shortUrl2.getShortUrl(),
+                shortUrl2.getOriginUrl(),
+                shortUrl2.getDateOfCreating(),
+                shortUrl2.getDateOfExpiring(),
+                shortUrl2.getUser().getId()
+        );
+
+        List<ShortUrlResponse> userUrls = List.of(response1, response2);
         when(shortUrlService.findAllShortUrls()).thenReturn(userUrls);
 
         // Act and Assert
         mockMvc.perform(get("/api/v1/short-urls")
                         .requestAttr("user", mockUser))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].shortUrl").value(shortUrl1.getShortUrl()))
-                .andExpect(jsonPath("$[1].shortUrl").value(shortUrl2.getShortUrl()));
+                .andExpect(jsonPath("$[0].shortUrl").value(response1.shortUrl()))
+                .andExpect(jsonPath("$[1].shortUrl").value(response2.shortUrl()));
 
         System.out.println("User's Short URLs: ");
-        userUrls.forEach(url -> System.out.println(" - " + url.getShortUrl()));
+        userUrls.forEach(url -> System.out.println(" - " + url.shortUrl()));
     }
 
     @Test
@@ -140,7 +155,15 @@ class ShortUrlControllerTest {
         mockShortUrl.setCountOfTransition(5L);
         mockShortUrl.setUser(mockUser);
 
-        when(shortUrlService.findAllShortUrls()).thenReturn(List.of(mockShortUrl));
+        ShortUrlResponse mockShortUrlResponse = new ShortUrlResponse(
+                shortUrl,
+                mockShortUrl.getOriginUrl(),
+                mockShortUrl.getDateOfCreating(),
+                mockShortUrl.getDateOfExpiring(),
+                mockUser.getId()
+        );
+
+        when(shortUrlService.findAllShortUrls()).thenReturn(List.of(mockShortUrlResponse));
 
         mockMvc.perform(get("/api/v1/short-urls/" + shortUrl+"/stats")
                         .requestAttr("user", mockUser))
@@ -151,6 +174,7 @@ class ShortUrlControllerTest {
 
     @Test
     void testFindOriginalUrl() throws Exception {
+        String shortUrl = faker.regexify("[A-Za-z0-9]{8}");
         String originalUrl = faker.internet().url();
         User mockUser = new User();
         mockUser.setId(1L);
@@ -161,7 +185,14 @@ class ShortUrlControllerTest {
         mockShortUrl.setOriginUrl(originalUrl);
         mockShortUrl.setUser(mockUser);
 
-        when(shortUrlService.findAllShortUrls()).thenReturn(List.of(mockShortUrl));
+        ShortUrlResponse mockShortUrlResponse = new ShortUrlResponse(
+                shortUrl,
+                mockShortUrl.getOriginUrl(),
+                mockShortUrl.getDateOfCreating(),
+                mockShortUrl.getDateOfExpiring(),
+                mockUser.getId()
+        );
+        when(shortUrlService.findAllShortUrls()).thenReturn(List.of(mockShortUrlResponse));
 
         mockMvc.perform(get("/api/v1/short-urls/search")
                         .param("originUrl", originalUrl)

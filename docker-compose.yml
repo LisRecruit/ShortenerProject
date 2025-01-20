@@ -1,5 +1,3 @@
-
-
 services:
   app:
     container_name: shortener-app
@@ -17,11 +15,11 @@ services:
       - shortener-network
   database:
     container_name: shortener-db
-    image: postgres:15
+    image: postgres:17
     environment:
-      POSTGRES_USER: shortener_user
-      POSTGRES_PASSWORD: shortener_password
-      POSTGRES_DB: shortener_db
+      - 'POSTGRES_USER=postgres'
+      - 'POSTGRES_PASSWORD=4602'
+      - 'POSTGRES_DB=url_shortener'
     ports:
       - "5432:5432"
     volumes:

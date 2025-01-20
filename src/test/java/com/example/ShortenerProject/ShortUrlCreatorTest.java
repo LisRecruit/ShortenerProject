@@ -2,6 +2,7 @@ package com.example.ShortenerProject;
 
 import com.example.ShortenerProject.shortUrl.ShortUrlCreator;
 import com.example.ShortenerProject.shortUrl.ShortUrlRepository;
+import com.example.ShortenerProject.utils.Validator;
 import net.datafaker.Faker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,6 +18,7 @@ public class ShortUrlCreatorTest {
     @Mock
     private ShortUrlRepository shortUrlRepository;
     private ShortUrlCreator shortUrlCreator;
+    private Validator validator;
     private final Faker faker = new Faker();
 
     @BeforeEach
@@ -42,8 +44,8 @@ public class ShortUrlCreatorTest {
         System.out.println("Testing valid URL: " + validUrl);
         System.out.println("Testing invalid URL: " + invalidUrl);
 
-        assertTrue(shortUrlCreator.isValidUrl(validUrl), "Valid URL should return true");
-        assertFalse(shortUrlCreator.isValidUrl(invalidUrl), "Invalid URL should return false");
+        assertTrue(validator.isValidUrl(validUrl), "Valid URL should return true");
+        assertFalse(validator.isValidUrl(invalidUrl), "Invalid URL should return false");
     }
 
     @Test
