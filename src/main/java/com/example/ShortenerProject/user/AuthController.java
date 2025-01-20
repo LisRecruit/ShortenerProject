@@ -8,6 +8,10 @@ import com.example.ShortenerProject.user.dto.response.RegistrationResponse;
 import com.example.ShortenerProject.user.dto.response.UserResponse;
 import com.example.ShortenerProject.utils.Validator;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -30,7 +34,31 @@ public class AuthController {
     @PostMapping("/login")
     @Operation(
             summary = "User authentication",
-            description = "Accepts a username and password, verifies them, and returns a JWT token"
+            description = "Accepts a username and password, verifies them, and returns a JWT token",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "Login request with username and password",
+            required = true,
+            content = @Content(
+                    schema = @Schema(implementation = LoginRequest.class)
+            )
+    ),
+            responses = {
+                    @ApiResponse(responseCode = "401",
+                            description = "Authentication failed. Invalid username or password.",
+                            content = @Content(
+                                    schema = @Schema(
+                                            example = "{\"error\": \"Invalid username or password\"}"
+                                    )
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Authentication successful. JWT token returned.",
+                            content = @Content(
+                                    schema = @Schema(implementation = AuthResponse.class)
+                            )
+                    )
+            }
     )
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         authenticationManager.authenticate(
