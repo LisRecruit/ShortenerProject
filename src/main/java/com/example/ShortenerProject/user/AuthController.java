@@ -7,6 +7,8 @@ import com.example.ShortenerProject.user.dto.response.AuthResponse;
 import com.example.ShortenerProject.user.dto.response.RegistrationResponse;
 import com.example.ShortenerProject.user.dto.response.UserResponse;
 import com.example.ShortenerProject.utils.Validator;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/v1/auth")
+@Tag(name = "Authentication", description = "API for user authentication and registration")
 public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
@@ -25,6 +28,10 @@ public class AuthController {
     private final UserService userService;
 
     @PostMapping("/login")
+    @Operation(
+            summary = "User authentication",
+            description = "Accepts a username and password, verifies them, and returns a JWT token"
+    )
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -38,6 +45,10 @@ public class AuthController {
     }
 
     @PostMapping("/registration")
+    @Operation(
+            summary = "New user registration",
+            description = "Registers a new user with the provided data and returns a JWT token"
+    )
     public ResponseEntity<?> registration(@RequestBody UserCreateRequest request) {
         if (!Validator.isValidPassword(request.password())) {
             return ResponseEntity.status(400).body("Password must contain at least 8 characters, including digits, uppercase and lowercase letters.");
