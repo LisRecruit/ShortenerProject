@@ -114,7 +114,7 @@ public class AuthController {
     )
     public ResponseEntity<?> registration(@RequestBody UserCreateRequest request) {
         if (!Validator.isValidPassword(request.password())) {
-            return ResponseEntity.status(400).body("{\"error\": \"Password must contain at least 8 characters, including digits, uppercase and lowercase letters.\"}");
+            return ResponseEntity.status(400).body("Password must contain at least 8 characters, including digits, uppercase and lowercase letters.");
         }
         try {
             String creationMessage = userService.createUser(request);
@@ -140,7 +140,7 @@ public class AuthController {
 
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            return ResponseEntity.status(500).body("{\"error\": \"Internal Server Error\"}");
+            return ResponseEntity.status(500).body("Internal Server Error");
         }
     }
 }
