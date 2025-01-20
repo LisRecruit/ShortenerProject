@@ -96,7 +96,7 @@ class AuthControllerTest {
 
     @Test
     void testRegistrationInternalServerError() {
-        UserCreateRequest request = new UserCreateRequest("newuser", "password");
+        UserCreateRequest request = new UserCreateRequest("newuser", "Password1");
         when(userService.createUser(request)).thenThrow(new RuntimeException("Unexpected error"));
 
         ResponseEntity<?> response = authController.registration(request);

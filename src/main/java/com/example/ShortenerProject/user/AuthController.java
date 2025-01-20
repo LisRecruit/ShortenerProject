@@ -42,28 +42,31 @@ public class AuthController {
         if (!Validator.isValidPassword(request.password())) {
             return ResponseEntity.status(400).body("Password must contain at least 8 characters, including digits, uppercase and lowercase letters.");
         }
+        try {
+            String creationMessage = userService.createUser(request);
 
-        String creationMessage = userService.createUser(request);
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.username(),
+                            request.password()
+                    )
+            );
+            UserDetails userDetails = userDetailsService.loadUserByUsername(request.username());
+            String token = jwtUtil.generateToken(userDetails);
 
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.username(),
-                        request.password()
-                )
-        );
-        UserDetails userDetails = userDetailsService.loadUserByUsername(request.username());
-        String token = jwtUtil.generateToken(userDetails);
+            UserResponse userResponse = UserResponse.builder()
+                    .username(request.username())
+                    .build();
 
-        UserResponse userResponse = UserResponse.builder()
-                .username(request.username())
-                .build();
+            RegistrationResponse response = RegistrationResponse.builder()
+                    .token(token)
+                    .userResponse(userResponse)
+                    .message(creationMessage)
+                    .build();
 
-        RegistrationResponse response = RegistrationResponse.builder()
-                .token(token)
-                .userResponse(userResponse)
-                .message(creationMessage)
-                .build();
-
-        return ResponseEntity.ok(response);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(500).body("Internal Server Error");
+        }
     }
 }
