@@ -152,10 +152,7 @@ public class ShortUrlService {
     @Transactional
     public Optional<ShortUrl> findAndRedirect(String shortUrl) {
         Optional<ShortUrl> foundUrl = shortUrlRepository.findByShortUrl(shortUrl);
-        foundUrl.ifPresent(url -> {
-            url.setCountOfTransition(url.getCountOfTransition() + 1);
-            shortUrlRepository.save(url);
-        });
+        foundUrl.ifPresent(url -> incrementTransitionCount(shortUrl));
         return foundUrl;
     }
     @Transactional(readOnly = true)
@@ -166,6 +163,13 @@ public class ShortUrlService {
         return shortUrlRepository.findByShortUrl(shortUrl)
                 .filter(url -> url.getUser().getId() == user.getId())
                 .map(ShortUrl::getOriginUrl);
+    }
+    private void incrementTransitionCount(String shortUrl) {
+        ShortUrl shortUrlEntity = shortUrlRepository.findByShortUrl(shortUrl)
+                .orElseThrow(() -> new EntityNotFoundException("Short Url not found"));
+        shortUrlEntity.setCountOfTransition(shortUrlEntity.getCountOfTransition() + 1);
+        shortUrlRepository.save(shortUrlEntity);
+
     }
 
 }
