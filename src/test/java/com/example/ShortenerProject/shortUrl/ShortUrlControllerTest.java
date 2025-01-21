@@ -66,7 +66,6 @@ class ShortUrlControllerTest {
         ShortUrlCreateRequest request = new ShortUrlCreateRequest();
         request.setOriginUrl(originUrl);
         request.setUser(userId);
-        request.setDateOfExpiring("2025-12-31T23:59:59");
 
         ShortUrlResponse createdShortUrlResponse = ShortUrlResponse.builder()
                 .shortUrl(shortUrl)

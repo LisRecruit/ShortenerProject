@@ -10,18 +10,13 @@ import lombok.Setter;
 @Setter
 @Schema(description = "Request to create a shortened URL")
 public class ShortUrlCreateRequest {
-//    @NotEmpty(message = "Short URL cannot be empty")
-    private String shortUrl;
+
 
     @NotEmpty(message = "Origin URL cannot be empty")
     @Schema(description = "Original URL", example = "https://example.com")
     private String originUrl;
 
-    @Schema(description = "Creating date")
-    private String dateOfCreating;
 
-    @Schema(description = "Expiration date", example = "2025-12-31T23:59:59")
-    private String dateOfExpiring;
 
     @NotNull(message = "User ID cannot be null")
     @Schema(description = "User ID", example = "1")

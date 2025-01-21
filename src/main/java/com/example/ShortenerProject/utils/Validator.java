@@ -31,6 +31,7 @@ public class Validator {
 
             return response.getStatusCode().equals(HttpStatus.OK);
         } catch (Exception e) {
+
             return false;
         }
     }

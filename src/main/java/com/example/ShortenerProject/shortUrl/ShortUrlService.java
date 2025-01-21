@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -45,8 +46,13 @@ public class ShortUrlService {
         User user = userRepository.findById(request.getUser())
                 .orElseThrow(() -> new EntityNotFoundException(User.class,"id", request.getUser()));
 
+        LocalDateTime createdAt = LocalDateTime.now();
+        LocalDateTime expireddAt = createdAt.plusDays(180L);
         ShortUrl shortUrl = shortUrlMapper.toEntity(request);
         shortUrl.setShortUrl(shortUrlCreator.generateUniqueShortUrl());
+        shortUrl.setDateOfCreating(createdAt.toString());
+        shortUrl.setDateOfExpiring(expireddAt.toString());
+
         shortUrl.setUser(user);
 
         ShortUrl savedShortUrl = shortUrlRepository.save(shortUrl);
@@ -145,8 +151,7 @@ public class ShortUrlService {
         }
 
         shortUrl.setOriginUrl(request.getOriginUrl());
-        shortUrl.setDateOfCreating(request.getDateOfCreating());
-        shortUrl.setDateOfExpiring(request.getDateOfExpiring());
+
 
         ShortUrl updatedShortUrl = shortUrlRepository.save(shortUrl);
         return shortUrlMapper.toResponse(updatedShortUrl);
