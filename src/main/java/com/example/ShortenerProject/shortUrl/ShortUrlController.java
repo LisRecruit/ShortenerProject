@@ -31,6 +31,7 @@ public class ShortUrlController {
         this.shortUrlService = shortUrlService;
     }
 
+
     @Operation(
             summary = "Create a new shortened URL",
             description = "Allows registered users to create a new shortened URL for a given original URL.",
