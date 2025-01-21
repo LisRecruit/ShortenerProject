@@ -37,7 +37,10 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             chain.doFilter(request, response);
             return;
         }
-
+        if (request.getRequestURI().contains("/swagger-ui") || request.getRequestURI().contains("/v3/api-docs") || request.getRequestURI().contains("/swagger-ui.html")) {
+            chain.doFilter(request, response);
+            return;
+        }
 
         final String requestTokenHeader = request.getHeader("Authorization");
 
