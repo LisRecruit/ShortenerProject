@@ -16,7 +16,7 @@ class ShortUrlMapperTest {
         // Arrange
         ShortUrlCreateRequest request = new ShortUrlCreateRequest();
         request.setOriginUrl("https://example.com");
-        request.setUser(1L); // Устанавливаем ID пользователя
+
 
         ShortUrl shortUrl = shortUrlMapper.toEntity(request);
 

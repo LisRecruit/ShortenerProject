@@ -18,7 +18,7 @@ public class ShortUrlCreateRequest {
 
 
 
-    @NotNull(message = "User ID cannot be null")
-    @Schema(description = "User ID", example = "1")
-    private Long user;
+//    @NotNull(message = "User ID cannot be null")
+//    @Schema(description = "User ID", example = "1")
+//    private Long user;
 }

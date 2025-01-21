@@ -4,6 +4,7 @@ import com.example.shortenerproject.user.dto.request.UserCreateRequest;
 import com.example.shortenerproject.user.dto.response.UserResponse;
 import com.example.shortenerproject.user.dto.request.UserUpdateRequest;
 import com.example.shortenerproject.exception.EntityNotFoundException;
+import com.example.shortenerproject.utils.Validator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

@@ -13,7 +13,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -23,7 +26,7 @@ import java.util.Optional;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
+@WebMvcTest(ShortUrlController.class)
 class ShortUrlControllerTest {
 
     @Mock
@@ -39,9 +42,10 @@ class ShortUrlControllerTest {
 
     @InjectMocks
     private ShortUrlController shortUrlController;
-
+    @Autowired
     private MockMvc mockMvc;
     private final Faker faker = new Faker();
+
 
     @BeforeEach
     void setup() {
@@ -50,21 +54,22 @@ class ShortUrlControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "testUser", roles = {"USER"})
     void testCreateShortUrl() throws Exception {
         String originUrl = "https://http.cat";
         String shortUrl = faker.regexify("[A-Za-z0-9]{8}");
         Long userId = 1L;
-        User mockUser = new User();
-        mockUser.setId(userId);
-        mockUser.setUsername(faker.name().firstName());
+//        User mockUser = new User();
+//        mockUser.setId(userId);
+//        mockUser.setUsername(faker.name().firstName());
 
-        when(validator.isValidUrl(originUrl)).thenReturn(true);
-        when(shortUrlCreator.generateUniqueShortUrl()).thenReturn(shortUrl);
-        when(userRepository.findById(userId)).thenReturn(java.util.Optional.of(mockUser));
+//        when(validator.isValidUrl(originUrl)).thenReturn(true);
+//        when(shortUrlCreator.generateUniqueShortUrl()).thenReturn(shortUrl);
+//        when(userRepository.findById(userId)).thenReturn(java.util.Optional.of(mockUser));
 
         ShortUrlCreateRequest request = new ShortUrlCreateRequest();
         request.setOriginUrl(originUrl);
-        request.setUser(userId);
+
 
         ShortUrlResponse createdShortUrlResponse = ShortUrlResponse.builder()
                 .shortUrl(shortUrl)
@@ -73,14 +78,14 @@ class ShortUrlControllerTest {
                 .dateOfExpiring("2025-12-31T23:59:59")
                 .user(userId)
                 .build();
-        when(shortUrlService.createShortUrl(any(ShortUrlCreateRequest.class))).thenReturn(createdShortUrlResponse);
+        when(shortUrlService.createShortUrl(any(ShortUrlCreateRequest.class), any(User.class)))
+                .thenReturn(createdShortUrlResponse);
 
         String requestBody = new ObjectMapper().writeValueAsString(request);
 
         mockMvc.perform(post("/api/v1/short-urls")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody)
-                        .requestAttr("user", mockUser))
+                        .content(requestBody))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.shortUrl").value(shortUrl))
                 .andExpect(jsonPath("$.originUrl").value(originUrl));

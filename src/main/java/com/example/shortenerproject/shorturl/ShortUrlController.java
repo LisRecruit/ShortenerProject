@@ -11,9 +11,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,7 +27,7 @@ import java.util.Optional;
 public class ShortUrlController {
 
     private final ShortUrlService shortUrlService;
-
+    @Autowired
     public ShortUrlController(ShortUrlService shortUrlService) {
         this.shortUrlService = shortUrlService;
     }
@@ -46,8 +48,14 @@ public class ShortUrlController {
             }
     )
     @PostMapping
-    public ResponseEntity<ShortUrlResponse> createShortUrl(@Valid @RequestBody ShortUrlCreateRequest request) {
-        ShortUrlResponse response = shortUrlService.createShortUrl(request);
+//    @PreAuthorize("#request.user == principal.id")
+    public ResponseEntity<ShortUrlResponse> createShortUrl(@Valid @RequestBody ShortUrlCreateRequest request,
+                                                           @AuthenticationPrincipal User user) {
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);  // Обработка ошибки, если пользователь не найден
+        }
+
+        ShortUrlResponse response = shortUrlService.createShortUrl(request, user);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
     }
@@ -64,7 +72,10 @@ public class ShortUrlController {
             }
     )
     @GetMapping
-    public ResponseEntity<List<ShortUrlResponse>> getAllShortUrlsByUser(@RequestAttribute User user) {
+    public ResponseEntity<List<ShortUrlResponse>> getAllShortUrlsByUser(@AuthenticationPrincipal User user) {
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
         List<ShortUrlResponse> response = shortUrlService.findAllShortUrlsByUser(user);
         return ResponseEntity.ok(response);
     }

@@ -38,13 +38,14 @@ public class ShortUrlService {
     }
 
     @Transactional
-    public ShortUrlResponse createShortUrl(ShortUrlCreateRequest request) {
+    public ShortUrlResponse createShortUrl(ShortUrlCreateRequest request, User user) {
 
         if (!urlValidator.isValidUrl(request.getOriginUrl())) {
             throw new InvalidOriginUrlException("Invalid origin URL: " + request.getOriginUrl());
         }
-        User user = userRepository.findById(request.getUser())
-                .orElseThrow(() -> new EntityNotFoundException(User.class,"id", request.getUser()));
+        if (user == null) {
+            throw new EntityNotFoundException(User.class, "id", "null");
+        }
 
         LocalDateTime createdAt = LocalDateTime.now();
         LocalDateTime expireddAt = createdAt.plusDays(180L);
@@ -160,7 +161,18 @@ public class ShortUrlService {
     @Transactional
     public Optional<ShortUrl> findAndRedirect(String shortUrl) {
         Optional<ShortUrl> foundUrl = shortUrlRepository.findByShortUrl(shortUrl);
-        foundUrl.ifPresent(url -> incrementTransitionCount(shortUrl));
+        if (foundUrl.isPresent()) {
+            ShortUrl url = foundUrl.get();
+
+            // Проверяем, истек ли срок действия
+            if (!urlValidator.isDateValid(url)) {
+                // Если срок действия истек, возвращаем пустое значение
+                return Optional.empty();
+            }
+
+            // Увеличиваем счетчик переходов
+            incrementTransitionCount(shortUrl);
+        }
         return foundUrl;
     }
     @Transactional(readOnly = true)
