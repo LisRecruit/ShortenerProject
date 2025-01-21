@@ -1,0 +1,37 @@
+services:
+  app:
+    container_name: app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: app:latest
+    ports:
+      - "9999:9999"
+    environment:
+       - "SPRING_PROFILES_ACTIVE=prod"
+       - "H2_URL=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE"
+       - "H2_USERNAME=sa"
+       - "H2_PASSWORD="
+       - "POSTGRES_URL=jdbc:postgresql://shortener-db:5432/url_shortener"
+       - "POSTGRES_USERNAME=postgres"
+       - "POSTGRES_PASSWORD=4602"
+    depends_on:
+      - database
+    networks:
+      - shortener-network
+
+  database:
+    container_name: shortener-db
+    image: postgres:17
+    environment:
+      - "POSTGRES_USERNAME=postgres"
+      - "POSTGRES_PASSWORD=4602"
+      - "POSTGRES_DB=url_shortener"
+    ports:
+      - "5432:5432"
+    networks:
+      - shortener-network
+
+networks:
+  shortener-network:
+    driver: bridge
