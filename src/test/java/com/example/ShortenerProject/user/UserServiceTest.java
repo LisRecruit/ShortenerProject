@@ -1,9 +1,5 @@
-package com.example.ShortenerProject;
+package com.example.ShortenerProject.user;
 
-import com.example.ShortenerProject.user.User;
-import com.example.ShortenerProject.user.UserMapper;
-import com.example.ShortenerProject.user.UserRepository;
-import com.example.ShortenerProject.user.UserService;
 import com.example.ShortenerProject.user.dto.request.UserCreateRequest;
 import com.example.ShortenerProject.user.dto.request.UserUpdateRequest;
 import com.example.ShortenerProject.user.dto.response.UserResponse;

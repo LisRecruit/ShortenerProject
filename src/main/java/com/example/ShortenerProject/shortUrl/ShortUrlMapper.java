@@ -10,7 +10,7 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface ShortUrlMapper {
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "countOfTransition", constant = "0l")
+    @Mapping(target = "countOfTransition", constant = "0L")
     @Mapping(target = "user", ignore = true)
     ShortUrl toEntity(ShortUrlCreateRequest request);
 

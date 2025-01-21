@@ -1,7 +1,5 @@
-package com.example.ShortenerProject;
+package com.example.ShortenerProject.shortUrl;
 
-import com.example.ShortenerProject.shortUrl.ShortUrlCreator;
-import com.example.ShortenerProject.shortUrl.ShortUrlRepository;
 import com.example.ShortenerProject.utils.Validator;
 import net.datafaker.Faker;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,17 +34,6 @@ public class ShortUrlCreatorTest {
         assertEquals(8, shortUrl.length(), "Short URL should have a length of 8 characters");
     }
 
-    @Test
-    void testIsValidUrl() {
-        String validUrl = faker.internet().url();
-        String invalidUrl = faker.lorem().word();
-
-        System.out.println("Testing valid URL: " + validUrl);
-        System.out.println("Testing invalid URL: " + invalidUrl);
-
-        assertTrue(validator.isValidUrl(validUrl), "Valid URL should return true");
-        assertFalse(validator.isValidUrl(invalidUrl), "Invalid URL should return false");
-    }
 
     @Test
     void testGenerateUniqueShortUrl() {

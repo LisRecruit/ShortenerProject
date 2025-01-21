@@ -37,7 +37,7 @@ class AuthControllerTest {
 
         ResponseEntity<?> response = authController.login(loginRequest);
 
-        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(200, response.getStatusCode().value());
         assertTrue(response.getBody() instanceof AuthResponse);
         assertEquals("fake-jwt-token", ((AuthResponse) response.getBody()).token());
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
@@ -52,7 +52,7 @@ class AuthControllerTest {
 
         ResponseEntity<?> response = authController.login(loginRequest);
 
-        assertEquals(401, response.getStatusCodeValue());
+        assertEquals(401, response.getStatusCode().value());
         assertEquals("Invalid username or password", response.getBody());
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
         verifyNoInteractions(userDetailsService, jwtUtil);
@@ -60,7 +60,7 @@ class AuthControllerTest {
 
     @Test
     void testRegistrationSuccess() {
-        UserCreateRequest request = new UserCreateRequest("newuser", "password");
+        UserCreateRequest request = new UserCreateRequest("newuser", "Password1");
         UserDetails userDetails = mock(UserDetails.class);
 
         when(userService.createUser(request)).thenReturn("User created successfully");
@@ -69,7 +69,7 @@ class AuthControllerTest {
 
         ResponseEntity<?> response = authController.registration(request);
 
-        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(200, response.getStatusCode().value());
         assertTrue(response.getBody() instanceof RegistrationResponse);
         RegistrationResponse registrationResponse = (RegistrationResponse) response.getBody();
         assertEquals("fake-jwt-token", registrationResponse.token());
@@ -83,12 +83,12 @@ class AuthControllerTest {
 
     @Test
     void testRegistrationFailure() {
-        UserCreateRequest request = new UserCreateRequest("newuser", "password");
+        UserCreateRequest request = new UserCreateRequest("newuser", "Password1");
         when(userService.createUser(request)).thenThrow(new IllegalArgumentException("Username already exists"));
 
         ResponseEntity<?> response = authController.registration(request);
 
-        assertEquals(400, response.getStatusCodeValue());
+        assertEquals(400, response.getStatusCode().value());
         assertEquals("Username already exists", response.getBody());
         verify(userService).createUser(request);
         verifyNoInteractions(authenticationManager, userDetailsService, jwtUtil);
@@ -96,12 +96,12 @@ class AuthControllerTest {
 
     @Test
     void testRegistrationInternalServerError() {
-        UserCreateRequest request = new UserCreateRequest("newuser", "password");
+        UserCreateRequest request = new UserCreateRequest("newuser", "Password1");
         when(userService.createUser(request)).thenThrow(new RuntimeException("Unexpected error"));
 
         ResponseEntity<?> response = authController.registration(request);
 
-        assertEquals(500, response.getStatusCodeValue());
+        assertEquals(500, response.getStatusCode().value());
         assertEquals("Internal Server Error", response.getBody());
         verify(userService).createUser(request);
         verifyNoInteractions(authenticationManager, userDetailsService, jwtUtil);
