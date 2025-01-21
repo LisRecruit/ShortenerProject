@@ -45,6 +45,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**").permitAll() // Дозволити маршрути аутентифікації
                         .requestMatchers("/h2-console/**").permitAll()
+                        .requestMatchers("/api/v1/short-urls/**").permitAll()
+                        .requestMatchers("/swagger-ui.html/**").permitAll()
+                        .requestMatchers("/swagger-ui/**").permitAll()
+                        .requestMatchers("/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated() // Усі інші маршрути вимагають аутентифікації
                 )
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class) // Додати JWT-фільтр
