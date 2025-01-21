@@ -49,7 +49,7 @@ class JwtRequestFilterTest {
 
     @Test
     void doFilterInternal_ValidToken_AuthenticationSet() throws ServletException, IOException {
-        // Мокування даних
+
         String jwtToken = "valid.jwt.token";
         String username = "testuser";
 
@@ -58,58 +58,58 @@ class JwtRequestFilterTest {
         when(userDetailsService.loadUserByUsername(username)).thenReturn(userDetails);
         when(jwtUtil.validateToken(jwtToken, userDetails)).thenReturn(true);
 
-        // Виклик методу
+        // Method call
         jwtRequestFilter.doFilterInternal(request, response, filterChain);
 
-        // Перевірка, що автентифікація була встановлена
+        // Verifying that authentication has been established
         UsernamePasswordAuthenticationToken authentication =
                 (UsernamePasswordAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
         assert authentication != null;
         assert authentication.getPrincipal().equals(userDetails);
 
-        // Перевірка, що ланцюжок фільтрів було викликано
+        // Checking that the filter chain has been called
         verify(filterChain, times(1)).doFilter(request, response);
     }
 
     @Test
     void doFilterInternal_InvalidToken_NoAuthenticationSet() throws ServletException, IOException {
-        // Мокування даних
+
         String jwtToken = "invalid.jwt.token";
 
         when(request.getHeader("Authorization")).thenReturn("Bearer " + jwtToken);
         when(jwtUtil.extractUsername(jwtToken)).thenThrow(new IllegalArgumentException("Unable to parse token"));
 
-        // Виклик методу
+        // Method call
         jwtRequestFilter.doFilterInternal(request, response, filterChain);
 
-        // Перевірка, що автентифікація не була встановлена
+        // Verify that authentication has not been established
         assert SecurityContextHolder.getContext().getAuthentication() == null;
 
-        // Перевірка, що ланцюжок фільтрів було викликано
+        // Checking that the filter chain has been called
         verify(filterChain, times(1)).doFilter(request, response);
     }
 
     @Test
     void doFilterInternal_ExpiredToken_NoAuthenticationSet() throws ServletException, IOException {
-        // Очистка SecurityContextHolder перед тестом
+        // Clearing the SecurityContextHolder before the test
         SecurityContextHolder.clearContext();
 
-        // Мокування даних
+
         String jwtToken = "expired.jwt.token";
 
         when(request.getHeader("Authorization")).thenReturn("Bearer " + jwtToken);
         when(jwtUtil.extractUsername(jwtToken)).thenThrow(new ExpiredJwtException(null, null, "Token expired"));
 
-        // Виклик методу
+        // Method call
         jwtRequestFilter.doFilterInternal(request, response, filterChain);
 
-        // Перевірка, що автентифікація не була встановлена
+        // Verify that authentication has not been established
         assert SecurityContextHolder.getContext().getAuthentication() == null;
 
-        // Перевірка, що ланцюжок фільтрів викликано
+        // Checking that the filter chain is called
         verify(filterChain, times(1)).doFilter(request, response);
 
-        // Перевірка, що логер попередив про прострочений токен
+        // Checking that the logger warned about an expired token
         verify(jwtUtil, times(0)).validateToken(anyString(), any(UserDetails.class));
     }
 
