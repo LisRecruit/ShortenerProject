@@ -123,7 +123,7 @@ public class AuthController {
             return ResponseEntity.status(400).body("Password must contain at least 8 characters, including digits, uppercase and lowercase letters.");
         }
         try {
-            String creationMessage = userService.createUser(request);
+            User createdUser = userService.createUser(request);
 
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -135,13 +135,14 @@ public class AuthController {
             String token = jwtUtil.generateToken(userDetails);
 
             UserResponse userResponse = UserResponse.builder()
+                    .id(createdUser.getId())
                     .username(request.username())
                     .build();
 
             RegistrationResponse response = RegistrationResponse.builder()
                     .token(token)
                     .userResponse(userResponse)
-                    .message(creationMessage)
+                    .message("User with username " + createdUser.getUsername() + " created with ID " + createdUser.getId())
                     .build();
 
             return ResponseEntity.ok(response);

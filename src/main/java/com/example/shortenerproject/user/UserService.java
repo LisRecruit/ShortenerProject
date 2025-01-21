@@ -20,17 +20,16 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
-    public String createUser(UserCreateRequest request) {
+    public User createUser(UserCreateRequest request) {
         if (userRepository.existsByUsername(request.username())) {
-            return "User with this username already exists";
+            throw new IllegalArgumentException("User already exists");
         }
 
         User user = User.builder()
                 .username(request.username())
-                .password(passwordEncoder.encode(request.password())) //додати passwordEncoder з SecurityConfig
+                .password(passwordEncoder.encode(request.password()))
                 .build();
-        userRepository.save(user);
-        return "User with username " + request.username() + " created";
+        return userRepository.save(user);
     }
 
     public Page<UserResponse> getAllUsers(PageRequest pageRequest) {

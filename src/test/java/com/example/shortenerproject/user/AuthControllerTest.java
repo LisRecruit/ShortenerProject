@@ -62,8 +62,13 @@ class AuthControllerTest {
     void testRegistrationSuccess() {
         UserCreateRequest request = new UserCreateRequest("newuser", "Password1");
         UserDetails userDetails = mock(UserDetails.class);
+        User createdUser = User.builder()
+                .id(1L) // Задаем ID пользователя
+                .username("newuser")
+                .password("encodedPassword") // Неважно, так как он не используется в тесте
+                .build();
 
-        when(userService.createUser(request)).thenReturn("User created successfully");
+        when(userService.createUser(request)).thenReturn(createdUser);
         when(userDetailsService.loadUserByUsername("newuser")).thenReturn(userDetails);
         when(jwtUtil.generateToken(userDetails)).thenReturn("fake-jwt-token");
 
