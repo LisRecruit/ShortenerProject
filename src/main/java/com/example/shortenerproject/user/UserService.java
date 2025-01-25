@@ -14,20 +14,15 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class UserService {
-    private static final String NOT_FOUND=" not found";
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public String createUser(UserCreateRequest request) {
-        if (userRepository.existsByUsername(request.username())) {
-            return "User with this username already exists";
-        }
-
         User user = User.builder()
                 .username(request.username())
-                .password(passwordEncoder.encode(request.password())) //додати passwordEncoder з SecurityConfig
+                .password(passwordEncoder.encode(request.password()))
                 .build();
         userRepository.save(user);
         return "User with username " + request.username() + " created";
@@ -59,6 +54,9 @@ public class UserService {
         return userMapper.toUserResponse(user);
     }
 
+    public boolean existsByUsername(String username) {
+        return userRepository.existsByUsername(username);
+    }
 
     public void deleteUser(Long id) {
         userRepository.deleteById(id);

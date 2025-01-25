@@ -3,6 +3,7 @@ package com.example.shortenerproject.exception;
 import com.example.shortenerproject.exception.dto.ErrorResponse;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -21,10 +22,10 @@ public class GlobalExceptionHandler {
         return new ErrorResponse(HttpStatus.NOT_FOUND.name(), exception.getMessage());
     }
 
-    @ExceptionHandler(value = BadCredentialsException.class)
+    @ExceptionHandler(value = AuthenticationException.class)
     @ResponseBody
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ErrorResponse handleException(BadCredentialsException exception) {
+    public ErrorResponse handleException(AuthenticationException exception) {
         return new ErrorResponse(HttpStatus.UNAUTHORIZED.name(), "Invalid username or password");
     }
 
