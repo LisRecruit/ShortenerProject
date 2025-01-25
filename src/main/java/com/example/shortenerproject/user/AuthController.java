@@ -1,5 +1,6 @@
 package com.example.shortenerproject.user;
 
+import com.example.shortenerproject.exception.dto.ErrorResponse;
 import com.example.shortenerproject.security.JwtUtil;
 import com.example.shortenerproject.user.dto.request.LoginRequest;
 import com.example.shortenerproject.user.dto.request.UserCreateRequest;
@@ -63,20 +64,15 @@ public class AuthController {
             }
     )
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-        try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            request.username(),
-                            request.password()
-                    )
-            );
-            UserDetails userDetails = userDetailsService.loadUserByUsername(request.username());
-            String token = jwtUtil.generateToken(userDetails);
-            return ResponseEntity.ok(new AuthResponse(token));
-        } catch (BadCredentialsException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
-        }
-
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.username(),
+                        request.password()
+                )
+        );
+        UserDetails userDetails = userDetailsService.loadUserByUsername(request.username());
+        String token = jwtUtil.generateToken(userDetails);
+        return ResponseEntity.ok(new AuthResponse(token));
     }
 
     @PostMapping("/registration")
@@ -122,8 +118,11 @@ public class AuthController {
         if (!Validator.isValidPassword(request.password())) {
             return ResponseEntity.status(400).body("Password must contain at least 8 characters, including digits, uppercase and lowercase letters.");
         }
+        if (userService.existsByUsername(request.username())) {
+            return ResponseEntity.status(400).body(new ErrorResponse("400", "Username already exists. Please try again."));
+        }
         try {
-            User createdUser = userService.createUser(request);
+            String creationMessage = userService.createUser(request);
 
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -135,21 +134,18 @@ public class AuthController {
             String token = jwtUtil.generateToken(userDetails);
 
             UserResponse userResponse = UserResponse.builder()
-                    .id(createdUser.getId())
+                    .id(userService.getUserByUsername(request.username()).getId())
                     .username(request.username())
                     .build();
 
             RegistrationResponse response = RegistrationResponse.builder()
                     .token(token)
                     .userResponse(userResponse)
-                    .message("User with username " + createdUser.getUsername() + " created with ID " + createdUser.getId())
+                    .message(creationMessage)
                     .build();
-
             return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(400).body(e.getMessage()); // Возвращаем ошибку 400 с сообщением
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body("Internal Server Error"); // Обработка других ошибок
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(500).body(new ErrorResponse("INTERNAL_SERVER_ERROR", "Internal Server Error"));
         }
     }
 }
