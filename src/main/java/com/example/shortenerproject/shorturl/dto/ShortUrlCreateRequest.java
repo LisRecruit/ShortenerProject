@@ -6,19 +6,14 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
-@Setter
+
 @Schema(description = "Request to create a shortened URL")
-public class ShortUrlCreateRequest {
-
-
+public record ShortUrlCreateRequest (
     @NotEmpty(message = "Origin URL cannot be empty")
     @Schema(description = "Original URL", example = "https://example.com")
-    private String originUrl;
-
-
+    String originUrl,
 
     @NotNull(message = "User ID cannot be null")
     @Schema(description = "User ID", example = "1")
-    private Long user;
-}
+    Long user
+){}
