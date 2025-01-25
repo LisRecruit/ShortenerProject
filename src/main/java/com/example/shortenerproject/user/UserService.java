@@ -24,8 +24,7 @@ public class UserService {
                 .username(request.username())
                 .password(passwordEncoder.encode(request.password()))
                 .build();
-        userRepository.save(user);
-        return "User with username " + request.username() + " created";
+        return userRepository.save(user);
     }
 
     public Page<UserResponse> getAllUsers(PageRequest pageRequest) {
