@@ -1,8 +1,9 @@
-package com.example.shortenerproject.shorturl;
+package com.example.shortenerproject.shortUrl;
 
 import com.example.shortenerproject.exception.CantBeNullException;
 import com.example.shortenerproject.exception.EntityNotFoundException;
 import com.example.shortenerproject.exception.InvalidOriginUrlException;
+import com.example.shortenerproject.shorturl.*;
 import com.example.shortenerproject.shorturl.dto.ShortUrlCreateRequest;
 import com.example.shortenerproject.shorturl.dto.ShortUrlResponse;
 import com.example.shortenerproject.user.User;
@@ -51,9 +52,7 @@ class ShortUrlServiceTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         user = new User(1L, "username", "Password1");
-        createRequest = new ShortUrlCreateRequest();
-        createRequest.setOriginUrl("http://example.com");
-        createRequest.setUser(1L);
+        createRequest = new ShortUrlCreateRequest("http://example.com",1l);
 
 
         shortUrl = new ShortUrl();
@@ -100,7 +99,7 @@ class ShortUrlServiceTest {
 
     @Test
     void createShortUrl_InvalidUrl_ShouldThrowException() {
-        when(urlValidator.isValidUrl(createRequest.getOriginUrl())).thenReturn(false);
+        when(urlValidator.isValidUrl(createRequest.originUrl())).thenReturn(false);
 
         InvalidOriginUrlException exception = assertThrows(InvalidOriginUrlException.class, () -> shortUrlService.createShortUrl(createRequest));
         assertEquals("Invalid origin URL: http://example.com", exception.getMessage());
@@ -108,7 +107,7 @@ class ShortUrlServiceTest {
 
     @Test
     void createShortUrl_UserNotFound_ShouldThrowException() {
-        when(urlValidator.isValidUrl(createRequest.getOriginUrl())).thenReturn(true);
+        when(urlValidator.isValidUrl(createRequest.originUrl())).thenReturn(true);
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> shortUrlService.createShortUrl(createRequest));
@@ -174,9 +173,8 @@ class ShortUrlServiceTest {
 
     @Test
     void updateShortUrl_ValidRequest_ShouldUpdateShortUrl() {
-        ShortUrlCreateRequest updateRequest = new ShortUrlCreateRequest();
-        updateRequest.setOriginUrl("http://updated-example.com");
-        updateRequest.setUser(1L);
+        ShortUrlCreateRequest updateRequest = new ShortUrlCreateRequest("http://updated-example.com",1l);
+
 
         when(shortUrlRepository.findById(1L)).thenReturn(Optional.of(shortUrl));
         when(shortUrlCreator.generateUniqueShortUrl()).thenReturn("short.ly/updated");
@@ -203,9 +201,7 @@ class ShortUrlServiceTest {
 
     @Test
     void updateShortUrl_UserNotFound_ShouldThrowException() {
-        ShortUrlCreateRequest updateRequest = new ShortUrlCreateRequest();
-        updateRequest.setOriginUrl("http://updated-example.com");
-        updateRequest.setUser(1L);
+        ShortUrlCreateRequest updateRequest = new ShortUrlCreateRequest("http://updated-example.com", 1l );
 
         when(shortUrlRepository.findById(1L)).thenReturn(Optional.empty());
 

@@ -1,5 +1,9 @@
-package com.example.shortenerproject.shorturl;
+package com.example.shortenerproject.shortUrl;
 
+import com.example.shortenerproject.shorturl.ShortUrl;
+import com.example.shortenerproject.shorturl.ShortUrlController;
+import com.example.shortenerproject.shorturl.ShortUrlCreator;
+import com.example.shortenerproject.shorturl.ShortUrlService;
 import com.example.shortenerproject.shorturl.dto.ShortUrlCreateRequest;
 import com.example.shortenerproject.shorturl.dto.ShortUrlResponse;
 import com.example.shortenerproject.shorturl.dto.ShortUrlStatsResponse;
@@ -62,9 +66,7 @@ class ShortUrlControllerTest {
         when(shortUrlCreator.generateUniqueShortUrl()).thenReturn(shortUrl);
         when(userRepository.findById(userId)).thenReturn(java.util.Optional.of(mockUser));
 
-        ShortUrlCreateRequest request = new ShortUrlCreateRequest();
-        request.setOriginUrl(originUrl);
-        request.setUser(userId);
+        ShortUrlCreateRequest request = new ShortUrlCreateRequest(originUrl, userId);
 
         ShortUrlResponse createdShortUrlResponse = ShortUrlResponse.builder()
                 .shortUrl(shortUrl)

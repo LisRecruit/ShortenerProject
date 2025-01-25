@@ -1,5 +1,7 @@
-package com.example.shortenerproject.shorturl;
+package com.example.shortenerproject.shortUrl;
 
+import com.example.shortenerproject.shorturl.ShortUrl;
+import com.example.shortenerproject.shorturl.ShortUrlMapper;
 import com.example.shortenerproject.shorturl.dto.ShortUrlCreateRequest;
 import com.example.shortenerproject.shorturl.dto.ShortUrlResponse;
 import com.example.shortenerproject.user.User;
@@ -14,9 +16,7 @@ class ShortUrlMapperTest {
     @Test
     void shouldMapShortUrlCreateRequestToEntity() {
         // Arrange
-        ShortUrlCreateRequest request = new ShortUrlCreateRequest();
-        request.setOriginUrl("https://example.com");
-        request.setUser(1L); // Устанавливаем ID пользователя
+        ShortUrlCreateRequest request = new ShortUrlCreateRequest("https://example.com", 1l);
 
         ShortUrl shortUrl = shortUrlMapper.toEntity(request);
 
