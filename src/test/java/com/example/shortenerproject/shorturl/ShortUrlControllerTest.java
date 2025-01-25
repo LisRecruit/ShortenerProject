@@ -75,7 +75,7 @@ class ShortUrlControllerTest {
 
         String requestBody = new ObjectMapper().writeValueAsString(request);
 
-        mockMvc.perform(post("/api/v1/short-urls")
+        mockMvc.perform(post("/api/v1/short-urls/my-urls")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody)
                         .requestAttr("user", mockUser))
@@ -125,7 +125,7 @@ class ShortUrlControllerTest {
         when(shortUrlService.getShortUrlStats(shortUrl, mockUser))
                 .thenReturn(Optional.of(mockShortUrlStatsResponse));
 
-        mockMvc.perform(get("/api/v1/short-urls/" + shortUrl + "/stats")
+        mockMvc.perform(get("/api/v1/short-urls/my-urls/" + shortUrl + "/stats")
                         .requestAttr("user", mockUser))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.shortUrl").value(shortUrl))
@@ -147,7 +147,7 @@ class ShortUrlControllerTest {
 
         when(shortUrlService.findOriginalUrl(shortUrl, mockUser)).thenReturn(Optional.of(originalUrl));
 
-        mockMvc.perform(get("/api/v1/short-urls/search")
+        mockMvc.perform(get("/api/v1/short-urls/my-urls/search")
                         .param("shortUrl", shortUrl)
                         .requestAttr("user", mockUser))
                 .andExpect(status().isOk())
