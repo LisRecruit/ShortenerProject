@@ -141,7 +141,7 @@ public class AuthController {
             RegistrationResponse response = RegistrationResponse.builder()
                     .token(token)
                     .userResponse(userResponse)
-                    .message("User with username " + createdUser.getUsername() + " created with ID " + createdUser.getId())
+                    .message(creationMessage)
                     .build();
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
