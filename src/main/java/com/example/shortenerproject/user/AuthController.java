@@ -111,6 +111,15 @@ public class AuthController {
                             content = @Content(
                                     schema = @Schema(implementation = RegistrationResponse.class)
                             )
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "Username already exists. Please try again.",
+                            content = @Content(
+                                    schema = @Schema(
+                                            example = "{\"error\": \"Username already exists. Please try again.\"}"
+                                    )
+                            )
                     )
             }
     )

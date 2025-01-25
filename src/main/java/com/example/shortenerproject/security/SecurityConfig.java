@@ -37,25 +37,25 @@ public class SecurityConfig {
                 .authoritiesByUsernameQuery("select username from users where username = ?");
 
     }
-    //For rest api
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtRequestFilter jwtRequestFilter) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable) // Вимкнення CSRF для REST API
+                .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/auth/**").permitAll() // Дозволити маршрути аутентифікації
+                        .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
-                        .requestMatchers("/api/v1/short-urls/**").permitAll()
+                        .requestMatchers("/api/v1/short-urls").permitAll()
+                        .requestMatchers("/api/v1/short-urls/{shortUrl}").permitAll()
                         .requestMatchers("/swagger-ui.html/**").permitAll()
                         .requestMatchers("/swagger-ui/**").permitAll()
                         .requestMatchers("/v3/api-docs/**").permitAll()
-                        .anyRequest().authenticated() // Усі інші маршрути вимагають аутентифікації
+                        .anyRequest().authenticated()
                 )
-                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class) // Додати JWT-фільтр
+                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
                 .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Без сесій
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                //для работы с Н2 консолью
                 .headers(headers -> headers
                         .httpStrictTransportSecurity(HeadersConfigurer.HstsConfig::disable)
                 );

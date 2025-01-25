@@ -1,9 +1,7 @@
-package com.example.shortenerproject.shortUrl;
+package com.example.shortenerproject.shorturl;
 
-import com.example.shortenerproject.shorturl.ShortUrl;
-import com.example.shortenerproject.shorturl.ShortUrlMapper;
-import com.example.shortenerproject.shorturl.dto.ShortUrlCreateRequest;
-import com.example.shortenerproject.shorturl.dto.ShortUrlResponse;
+import com.example.shortenerproject.shorturl.dto.request.ShortUrlCreateRequest;
+import com.example.shortenerproject.shorturl.dto.response.ShortUrlResponse;
 import com.example.shortenerproject.user.User;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;

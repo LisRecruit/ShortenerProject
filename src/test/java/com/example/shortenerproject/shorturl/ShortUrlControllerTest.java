@@ -1,12 +1,8 @@
-package com.example.shortenerproject.shortUrl;
+package com.example.shortenerproject.shorturl;
 
-import com.example.shortenerproject.shorturl.ShortUrl;
-import com.example.shortenerproject.shorturl.ShortUrlController;
-import com.example.shortenerproject.shorturl.ShortUrlCreator;
-import com.example.shortenerproject.shorturl.ShortUrlService;
-import com.example.shortenerproject.shorturl.dto.ShortUrlCreateRequest;
-import com.example.shortenerproject.shorturl.dto.ShortUrlResponse;
-import com.example.shortenerproject.shorturl.dto.ShortUrlStatsResponse;
+import com.example.shortenerproject.shorturl.dto.request.ShortUrlCreateRequest;
+import com.example.shortenerproject.shorturl.dto.response.ShortUrlResponse;
+import com.example.shortenerproject.shorturl.dto.response.ShortUrlStatsResponse;
 import com.example.shortenerproject.user.User;
 import com.example.shortenerproject.user.UserRepository;
 import com.example.shortenerproject.utils.Validator;
@@ -106,7 +102,7 @@ class ShortUrlControllerTest {
                         .user(1L)
                         .build()
         ));
-        mockMvc.perform(get("/api/v1/short-urls")
+        mockMvc.perform(get("/api/v1/short-urls/my-urls")
                         .requestAttr("user", testUser))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].shortUrl").value("QWertY14"))
