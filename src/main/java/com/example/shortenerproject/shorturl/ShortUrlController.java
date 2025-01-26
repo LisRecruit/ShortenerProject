@@ -7,6 +7,8 @@ import com.example.shortenerproject.shorturl.dto.ShortUrlCreateRequest;
 import com.example.shortenerproject.shorturl.dto.response.ShortUrlResponse;
 import com.example.shortenerproject.shorturl.dto.response.ShortUrlStatsResponse;
 import com.example.shortenerproject.user.User;
+import com.example.shortenerproject.user.UserRepository;
+import com.example.shortenerproject.user.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -30,10 +32,14 @@ public class ShortUrlController {
 
     private final ShortUrlService shortUrlService;
     private final JwtUtil jwtUtil;
+    private final UserRepository userRepository;
+
     @Autowired
-    public ShortUrlController(ShortUrlService shortUrlService, JwtUtil jwtUtil) {
+    public ShortUrlController(ShortUrlService shortUrlService, JwtUtil jwtUtil, UserRepository userRepository, UserService userService) {
         this.shortUrlService = shortUrlService;
         this.jwtUtil = jwtUtil;
+        this.userRepository = userRepository;
+
     }
 
     @Operation(
@@ -93,7 +99,10 @@ public class ShortUrlController {
             }
     )
     @GetMapping("/my-urls")
-    public ResponseEntity<List<ShortUrlResponse>> getAllShortUrlsByUser(@RequestAttribute User user) {
+    public ResponseEntity<List<ShortUrlResponse>> getAllShortUrlsByUser(@RequestHeader("Authorization") String token) {
+        String jwt = token.startsWith("Bearer ") ? token.substring(7) : token;
+        Long userId = jwtUtil.extractClaim(jwt, claims -> claims.get("userId", Long.class));
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
         List<ShortUrlResponse> response = shortUrlService.findAllShortUrlsByUser(user);
         return ResponseEntity.ok(response);
     }
@@ -112,7 +121,10 @@ public class ShortUrlController {
             }
     )
     @DeleteMapping("/my-urls/{id}")
-    public ResponseEntity<Void> deleteShortUrl(@PathVariable long id, @RequestAttribute User user) {
+    public ResponseEntity<Void> deleteShortUrl(@PathVariable long id, @RequestHeader("Authorization") String token) {
+        String jwt = token.startsWith("Bearer ") ? token.substring(7) : token;
+        Long userId = jwtUtil.extractClaim(jwt, claims -> claims.get("userId", Long.class));
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
         Optional<ShortUrlResponse> shortUrl = shortUrlService.findByIdAndUser(id, user);
         if (shortUrl.isEmpty()) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -160,7 +172,10 @@ public class ShortUrlController {
             }
     )
     @GetMapping("/my-urls/{shortUrl}/stats")
-    public ResponseEntity<ShortUrlStatsResponse> getShortUrlStats(@PathVariable String shortUrl, @RequestAttribute User user) {
+    public ResponseEntity<ShortUrlStatsResponse> getShortUrlStats(@PathVariable String shortUrl, @RequestHeader("Authorization") String token) {
+        String jwt = token.startsWith("Bearer ") ? token.substring(7) : token;
+        Long userId = jwtUtil.extractClaim(jwt, claims -> claims.get("userId", Long.class));
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
         Optional<ShortUrlStatsResponse> stats = shortUrlService.getShortUrlStats(shortUrl, user);
 
         if (stats.isEmpty()) {
@@ -183,7 +198,10 @@ public class ShortUrlController {
             }
     )
     @GetMapping("/my-urls/search")
-    public ResponseEntity<String> findOriginalUrl(@RequestParam String shortUrl, @RequestAttribute User user) {
+    public ResponseEntity<String> findOriginalUrl(@RequestParam String shortUrl, @RequestHeader("Authorization") String token) {
+        String jwt = token.startsWith("Bearer ") ? token.substring(7) : token;
+        Long userId = jwtUtil.extractClaim(jwt, claims -> claims.get("userId", Long.class));
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
         Optional<String> originUrl = shortUrlService.findOriginalUrl(shortUrl, user);
         if (originUrl.isEmpty()) {
             return ResponseEntity.notFound().build();
