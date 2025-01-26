@@ -1,7 +1,9 @@
 package com.example.shortenerproject.shorturl;
 
 import com.example.shortenerproject.exception.dto.ErrorResponse;
-import com.example.shortenerproject.shorturl.dto.request.ShortUrlCreateRequest;
+
+import com.example.shortenerproject.security.JwtUtil;
+import com.example.shortenerproject.shorturl.dto.ShortUrlCreateRequest;
 import com.example.shortenerproject.shorturl.dto.response.ShortUrlResponse;
 import com.example.shortenerproject.shorturl.dto.response.ShortUrlStatsResponse;
 import com.example.shortenerproject.user.User;
@@ -16,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,9 +29,11 @@ import java.util.Optional;
 public class ShortUrlController {
 
     private final ShortUrlService shortUrlService;
+    private final JwtUtil jwtUtil;
     @Autowired
-    public ShortUrlController(ShortUrlService shortUrlService) {
+    public ShortUrlController(ShortUrlService shortUrlService, JwtUtil jwtUtil) {
         this.shortUrlService = shortUrlService;
+        this.jwtUtil = jwtUtil;
     }
 
     @Operation(
@@ -52,29 +55,7 @@ public class ShortUrlController {
         }
     }
 
-    @Operation(
-            summary = "Redirect to the original URL",
-            description = "Redirect to the original URL associated with the given short URL.",
-            parameters = {
-                    @Parameter(name = "shortUrl", description = "Shortened URL", required = true)
-            },
-            responses = {
-                    @ApiResponse(responseCode = "302", description = "Redirect to the original URL",
-                            content = @Content(schema = @Schema(hidden = true))),
-                    @ApiResponse(responseCode = "404", description = "Shortened URL not found")
-            }
-    )
-    @GetMapping("/{shortUrl}")
-    @PreAuthorize("permitAll()")
-    public ResponseEntity<Void> redirect(@PathVariable String shortUrl) {
-        Optional<ShortUrl> foundUrl = shortUrlService.findAndRedirect(shortUrl);
-        if (foundUrl.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.status(HttpStatus.FOUND)
-                .header("Location", foundUrl.get().getOriginUrl())
-                .build();
-    }
+
 
     @Operation(
             summary = "Create a new shortened URL",
@@ -91,8 +72,11 @@ public class ShortUrlController {
             }
     )
     @PostMapping
-    public ResponseEntity<ShortUrlResponse> createShortUrl(@Valid @RequestBody ShortUrlCreateRequest request) {
-        ShortUrlResponse response = shortUrlService.createShortUrl(request);
+    public ResponseEntity<ShortUrlResponse> createShortUrl(@Valid @RequestBody ShortUrlCreateRequest request,
+                                                           @RequestHeader("Authorization") String token) {
+        String jwt = token.startsWith("Bearer ") ? token.substring(7) : token;
+        Long userId = jwtUtil.extractClaim(jwt, claims -> claims.get("userId", Long.class));
+        ShortUrlResponse response = shortUrlService.createShortUrl(request, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
     }

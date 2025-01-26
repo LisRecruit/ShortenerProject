@@ -3,7 +3,7 @@ package com.example.shortenerproject.shorturl;
 import com.example.shortenerproject.exception.CantBeNullException;
 import com.example.shortenerproject.exception.EntityNotFoundException;
 import com.example.shortenerproject.exception.InvalidOriginUrlException;
-import com.example.shortenerproject.shorturl.dto.request.ShortUrlCreateRequest;
+import com.example.shortenerproject.shorturl.dto.ShortUrlCreateRequest;
 import com.example.shortenerproject.shorturl.dto.response.ShortUrlResponse;
 import com.example.shortenerproject.user.User;
 import com.example.shortenerproject.user.UserRepository;
@@ -51,9 +51,9 @@ class ShortUrlServiceTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         user = new User(1L, "username", "Password1");
-        createRequest = new ShortUrlCreateRequest();
-        createRequest.setOriginUrl("http://example.com");
-        createRequest.setUser(1L);
+        createRequest = new ShortUrlCreateRequest("http://example.com");
+
+
 
 
         shortUrl = new ShortUrl();
@@ -67,7 +67,7 @@ class ShortUrlServiceTest {
 
     @Test
     void createShortUrl_ValidRequest_ShouldCreateShortUrl() {
-        when(urlValidator.isValidUrl(createRequest.getOriginUrl())).thenReturn(true);
+        when(urlValidator.isValidUrl(createRequest.originUrl())).thenReturn(true);
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
         when(shortUrlCreator.generateUniqueShortUrl()).thenReturn("Qwerty12");
         when(shortUrlMapper.toEntity(createRequest)).thenReturn(shortUrl);
@@ -80,7 +80,7 @@ class ShortUrlServiceTest {
                 .user(user.getId())
                 .build());
 
-        ShortUrlResponse response = shortUrlService.createShortUrl(createRequest, user);
+        ShortUrlResponse response = shortUrlService.createShortUrl(createRequest, user.getId());
 
         assertNotNull(response);
         assertEquals("Qwerty12", response.shortUrl());
@@ -95,7 +95,7 @@ class ShortUrlServiceTest {
         when(urlValidator.isValidUrl(createRequest.originUrl())).thenReturn(false);
 
         InvalidOriginUrlException exception = assertThrows(InvalidOriginUrlException.class, () ->
-                shortUrlService.createShortUrl(createRequest, user)
+                shortUrlService.createShortUrl(createRequest, user.getId())
         );
         assertEquals("Invalid origin URL: http://http.cat", exception.getMessage());
     }
@@ -106,7 +106,7 @@ class ShortUrlServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () ->
-                shortUrlService.createShortUrl(createRequest, user)
+                shortUrlService.createShortUrl(createRequest, user.getId())
         );
         assertEquals("User with id = 1 does not exist.", exception.getMessage());
     }
@@ -171,7 +171,7 @@ class ShortUrlServiceTest {
 
     @Test
     void updateShortUrl_ValidRequest_ShouldUpdateShortUrl() {
-        ShortUrlCreateRequest updateRequest = new ShortUrlCreateRequest("http://updated-example.com",1l);
+        ShortUrlCreateRequest updateRequest = new ShortUrlCreateRequest("http://updated-example.com");
 
 
         when(shortUrlRepository.findById(1L)).thenReturn(Optional.of(shortUrl));
@@ -199,7 +199,7 @@ class ShortUrlServiceTest {
 
     @Test
     void updateShortUrl_UserNotFound_ShouldThrowException() {
-        ShortUrlCreateRequest updateRequest = new ShortUrlCreateRequest("http://updated-example.com", 1l );
+        ShortUrlCreateRequest updateRequest = new ShortUrlCreateRequest("http://updated-example.com" );
 
         when(shortUrlRepository.findById(1L)).thenReturn(Optional.empty());
 

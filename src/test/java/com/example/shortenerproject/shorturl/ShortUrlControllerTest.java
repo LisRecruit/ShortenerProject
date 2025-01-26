@@ -1,6 +1,6 @@
 package com.example.shortenerproject.shorturl;
 
-import com.example.shortenerproject.shorturl.dto.request.ShortUrlCreateRequest;
+import com.example.shortenerproject.shorturl.dto.ShortUrlCreateRequest;
 import com.example.shortenerproject.shorturl.dto.response.ShortUrlResponse;
 import com.example.shortenerproject.shorturl.dto.response.ShortUrlStatsResponse;
 import com.example.shortenerproject.user.User;
@@ -59,17 +59,8 @@ class ShortUrlControllerTest {
         String originUrl = "https://http.cat";
         String shortUrl = faker.regexify("[A-Za-z0-9]{8}");
         Long userId = 1L;
-//        User mockUser = new User();
-//        mockUser.setId(userId);
-//        mockUser.setUsername(faker.name().firstName());
 
-//        when(validator.isValidUrl(originUrl)).thenReturn(true);
-//        when(shortUrlCreator.generateUniqueShortUrl()).thenReturn(shortUrl);
-//        when(userRepository.findById(userId)).thenReturn(java.util.Optional.of(mockUser));
-
-        ShortUrlCreateRequest request = new ShortUrlCreateRequest();
-        request.setOriginUrl(originUrl);
-
+        ShortUrlCreateRequest request = new ShortUrlCreateRequest(originUrl);
 
         ShortUrlResponse createdShortUrlResponse = ShortUrlResponse.builder()
                 .shortUrl(shortUrl)
@@ -78,7 +69,7 @@ class ShortUrlControllerTest {
                 .dateOfExpiring("2025-12-31T23:59:59")
                 .user(userId)
                 .build();
-        when(shortUrlService.createShortUrl(any(ShortUrlCreateRequest.class), any(User.class)))
+        when(shortUrlService.createShortUrl(any(ShortUrlCreateRequest.class), any(User.class).getId()))
                 .thenReturn(createdShortUrlResponse);
 
         String requestBody = new ObjectMapper().writeValueAsString(request);
