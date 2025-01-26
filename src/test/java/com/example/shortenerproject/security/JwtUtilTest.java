@@ -27,6 +27,8 @@ import static org.junit.jupiter.api.Assertions.*;
     @MockitoBean
     private UserDetails userDetails;
 
+
+
     @BeforeEach
     public void setUp() {
         Mockito.when(userDetails.getUsername()).thenReturn("testuser");
@@ -34,20 +36,21 @@ import static org.junit.jupiter.api.Assertions.*;
 
     @Test
     void testGenerateToken() {
-        String token = jwtUtil.generateToken(userDetails);
+        Long userId = 1L;
+        String token = jwtUtil.generateToken(userDetails, userId);
         assertNotNull(token);
     }
 
     @Test
     void testExtractUsername() {
-        String token = jwtUtil.generateToken(userDetails);
+        String token = jwtUtil.generateToken(userDetails, 1L);
         String username = jwtUtil.extractUsername(token);
         assertEquals("testuser", username);
     }
 
     @Test
     void testExtractExpiration() {
-        String token = jwtUtil.generateToken(userDetails);
+        String token = jwtUtil.generateToken(userDetails, 1L);
         Date expiration = jwtUtil.extractExpiration(token);
         assertNotNull(expiration);
         assertTrue(expiration.after(new Date()));
@@ -55,19 +58,19 @@ import static org.junit.jupiter.api.Assertions.*;
 
     @Test
     void testValidateToken() {
-        String token = jwtUtil.generateToken(userDetails);
+        String token = jwtUtil.generateToken(userDetails, 1L);
         assertTrue(jwtUtil.validateToken(token, userDetails));
     }
 
     @Test
     void testIsTokenExpired() {
-        String token = jwtUtil.generateToken(userDetails);
+        String token = jwtUtil.generateToken(userDetails, 1L);
         assertFalse(jwtUtil.isTokenExpired(token));
     }
 
     @Test
     void testExtractClaim() {
-        String token = jwtUtil.generateToken(userDetails);
+        String token = jwtUtil.generateToken(userDetails, 1L);
         String subject = jwtUtil.extractClaim(token, Claims::getSubject);
         assertEquals("testuser", subject);
     }

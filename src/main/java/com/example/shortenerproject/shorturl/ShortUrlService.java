@@ -3,7 +3,8 @@ package com.example.shortenerproject.shorturl;
 import com.example.shortenerproject.exception.CantBeNullException;
 import com.example.shortenerproject.exception.EntityNotFoundException;
 import com.example.shortenerproject.exception.InvalidOriginUrlException;
-import com.example.shortenerproject.shorturl.dto.request.ShortUrlCreateRequest;
+
+import com.example.shortenerproject.shorturl.dto.ShortUrlCreateRequest;
 import com.example.shortenerproject.shorturl.dto.response.ShortUrlResponse;
 import com.example.shortenerproject.shorturl.dto.response.ShortUrlStatsResponse;
 import com.example.shortenerproject.user.User;
@@ -38,13 +39,17 @@ public class ShortUrlService {
     }
 
     @Transactional
-    public ShortUrlResponse createShortUrl(ShortUrlCreateRequest request) {
+    public ShortUrlResponse createShortUrl(ShortUrlCreateRequest request, Long userId) {
+
+        if (request == null) {
+            throw new IllegalArgumentException("Request cannot be null");
+        }
 
         if (!urlValidator.isValidUrl(request.originUrl())) {
             throw new InvalidOriginUrlException("Invalid origin URL: " + request.originUrl());
         }
-        User user = userRepository.findById(request.user())
-                .orElseThrow(() -> new EntityNotFoundException(User.class,"id", request.user()));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException(User.class,"id", userId));
 
         LocalDateTime createdAt = LocalDateTime.now();
         LocalDateTime expireddAt = createdAt.plusDays(180L);
@@ -160,7 +165,18 @@ public class ShortUrlService {
     @Transactional
     public Optional<ShortUrl> findAndRedirect(String shortUrl) {
         Optional<ShortUrl> foundUrl = shortUrlRepository.findByShortUrl(shortUrl);
-        foundUrl.ifPresent(url -> incrementTransitionCount(shortUrl));
+        if (foundUrl.isPresent()) {
+            ShortUrl url = foundUrl.get();
+
+            // Проверяем, истек ли срок действия
+            if (!urlValidator.isDateValid(url)) {
+                // Если срок действия истек, возвращаем пустое значение
+                return Optional.empty();
+            }
+
+            // Увеличиваем счетчик переходов
+            incrementTransitionCount(shortUrl);
+        }
         return foundUrl;
     }
     @Transactional(readOnly = true)

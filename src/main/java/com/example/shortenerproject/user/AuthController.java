@@ -14,10 +14,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -71,7 +69,8 @@ public class AuthController {
                 )
         );
         UserDetails userDetails = userDetailsService.loadUserByUsername(request.username());
-        String token = jwtUtil.generateToken(userDetails);
+        User user = userService.getUserByUsername(request.username());
+        String token = jwtUtil.generateToken(userDetails, user.getId());
         return ResponseEntity.ok(new AuthResponse(token));
     }
 
@@ -132,6 +131,7 @@ public class AuthController {
         }
         try {
             String creationMessage = userService.createUser(request);
+            User user = userService.getUserByUsername(request.username());
 
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -140,7 +140,7 @@ public class AuthController {
                     )
             );
             UserDetails userDetails = userDetailsService.loadUserByUsername(request.username());
-            String token = jwtUtil.generateToken(userDetails);
+            String token = jwtUtil.generateToken(userDetails, user.getId());
 
             UserResponse userResponse = UserResponse.builder()
                     .id(userService.getUserByUsername(request.username()).getId())

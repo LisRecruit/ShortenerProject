@@ -35,7 +35,7 @@ class AuthControllerTest {
         UserDetails userDetails = mock(UserDetails.class);
 
         when(userDetailsService.loadUserByUsername("testuser")).thenReturn(userDetails);
-        when(jwtUtil.generateToken(userDetails)).thenReturn("fake-jwt-token");
+        when(jwtUtil.generateToken(userDetails, 1L)).thenReturn("fake-jwt-token");
 
         ResponseEntity<?> response = authController.login(loginRequest);
 
@@ -44,7 +44,7 @@ class AuthControllerTest {
         assertEquals("fake-jwt-token", ((AuthResponse) response.getBody()).token());
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
         verify(userDetailsService).loadUserByUsername("testuser");
-        verify(jwtUtil).generateToken(userDetails);
+        verify(jwtUtil).generateToken(userDetails, 1L);
     }
 
     @Test
@@ -73,7 +73,7 @@ class AuthControllerTest {
         when(userService.createUser(request)).thenReturn("User created successfully");
         when(userService.getUserByUsername("newuser")).thenReturn(mockedUser);
         when(userDetailsService.loadUserByUsername("newuser")).thenReturn(userDetails);
-        when(jwtUtil.generateToken(userDetails)).thenReturn("fake-jwt-token");
+        when(jwtUtil.generateToken(userDetails, 1L)).thenReturn("fake-jwt-token");
 
         ResponseEntity<?> response = authController.registration(request);
 
@@ -88,7 +88,7 @@ class AuthControllerTest {
         verify(userService).createUser(request);
         verify(userService).getUserByUsername("newuser");
         verify(userDetailsService).loadUserByUsername("newuser");
-        verify(jwtUtil).generateToken(userDetails);
+        verify(jwtUtil).generateToken(userDetails, 1L);
     }
 
 

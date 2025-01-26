@@ -43,9 +43,11 @@ class UserServiceTest {
         when(userRepository.existsByUsername(user.username())).thenReturn(false);
         when(passwordEncoder.encode(user.password())).thenReturn("encodedPassword");
 
-        String createdUser = userService.createUser(user);
+        User createdUser = userService.createUser(user);
 
-        assertEquals("User with username testUser created", createdUser);
+        assertNotNull(createdUser);
+        assertEquals("testUser", createdUser.getUsername());
+        assertEquals("encodedPassword", createdUser.getPassword());
         verify(userRepository, times(1)).save(any(User.class));
     }
 
