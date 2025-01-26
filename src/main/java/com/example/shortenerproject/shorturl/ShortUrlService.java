@@ -3,9 +3,9 @@ package com.example.shortenerproject.shorturl;
 import com.example.shortenerproject.exception.CantBeNullException;
 import com.example.shortenerproject.exception.EntityNotFoundException;
 import com.example.shortenerproject.exception.InvalidOriginUrlException;
-import com.example.shortenerproject.shorturl.dto.ShortUrlCreateRequest;
-import com.example.shortenerproject.shorturl.dto.ShortUrlResponse;
-import com.example.shortenerproject.shorturl.dto.ShortUrlStatsResponse;
+import com.example.shortenerproject.shorturl.dto.request.ShortUrlCreateRequest;
+import com.example.shortenerproject.shorturl.dto.response.ShortUrlResponse;
+import com.example.shortenerproject.shorturl.dto.response.ShortUrlStatsResponse;
 import com.example.shortenerproject.user.User;
 import com.example.shortenerproject.user.UserRepository;
 import com.example.shortenerproject.utils.Validator;
@@ -40,12 +40,11 @@ public class ShortUrlService {
     @Transactional
     public ShortUrlResponse createShortUrl(ShortUrlCreateRequest request, User user) {
 
-        if (!urlValidator.isValidUrl(request.getOriginUrl())) {
-            throw new InvalidOriginUrlException("Invalid origin URL: " + request.getOriginUrl());
+        if (!urlValidator.isValidUrl(request.originUrl())) {
+            throw new InvalidOriginUrlException("Invalid origin URL: " + request.originUrl());
         }
-        if (user == null) {
-            throw new EntityNotFoundException(User.class, "id", "null");
-        }
+        User user = userRepository.findById(request.user())
+                .orElseThrow(() -> new EntityNotFoundException(User.class,"id", request.user()));
 
         LocalDateTime createdAt = LocalDateTime.now();
         LocalDateTime expireddAt = createdAt.plusDays(180L);
@@ -140,18 +139,18 @@ public class ShortUrlService {
 
     @Transactional
     public ShortUrlResponse  updateShortUrl(ShortUrlCreateRequest request, long id, User user) {
-        if (request.getOriginUrl() == null || request.getOriginUrl().trim().isEmpty()) {
+        if (request.originUrl() == null || request.originUrl().trim().isEmpty()) {
             throw new InvalidOriginUrlException("Origin URL cannot be null or empty");
         }
         ShortUrl shortUrl = shortUrlRepository.findById(id)
                 .filter(url -> Objects.equals(url.getUser().getId(), user.getId()))
                 .orElseThrow(() -> new EntityNotFoundException("Short URL with ID " + id + " does not exist or does not belong to the user."));
 
-        if (!shortUrl.getOriginUrl().equals(request.getOriginUrl())) {
+        if (!shortUrl.getOriginUrl().equals(request.originUrl())) {
             shortUrl.setShortUrl(shortUrlCreator.generateUniqueShortUrl());
         }
 
-        shortUrl.setOriginUrl(request.getOriginUrl());
+        shortUrl.setOriginUrl(request.originUrl());
 
 
         ShortUrl updatedShortUrl = shortUrlRepository.save(shortUrl);

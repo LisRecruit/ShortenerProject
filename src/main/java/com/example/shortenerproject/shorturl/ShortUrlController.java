@@ -1,8 +1,9 @@
 package com.example.shortenerproject.shorturl;
 
-import com.example.shortenerproject.shorturl.dto.ShortUrlCreateRequest;
-import com.example.shortenerproject.shorturl.dto.ShortUrlResponse;
-import com.example.shortenerproject.shorturl.dto.ShortUrlStatsResponse;
+import com.example.shortenerproject.exception.dto.ErrorResponse;
+import com.example.shortenerproject.shorturl.dto.request.ShortUrlCreateRequest;
+import com.example.shortenerproject.shorturl.dto.response.ShortUrlResponse;
+import com.example.shortenerproject.shorturl.dto.response.ShortUrlStatsResponse;
 import com.example.shortenerproject.user.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -32,6 +33,48 @@ public class ShortUrlController {
         this.shortUrlService = shortUrlService;
     }
 
+    @Operation(
+            summary = "Get all shortened URLs",
+            description = "Retrieve a list of all shortened URLs created by the user or all users, depending on authorization.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "List of all shortened URLs",
+                            content = @Content(schema = @Schema(implementation = ShortUrlResponse[].class))),
+                    @ApiResponse(responseCode = "404", description = "No shortened URLs found")
+            }
+    )
+    @GetMapping
+    public ResponseEntity<?> getAllShortUrls() {
+        List<ShortUrlResponse> response = shortUrlService.findAllShortUrls();
+        if (response.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse("404","No shortened URLs found"));
+        } else {
+            return ResponseEntity.ok(response);
+        }
+    }
+
+    @Operation(
+            summary = "Redirect to the original URL",
+            description = "Redirect to the original URL associated with the given short URL.",
+            parameters = {
+                    @Parameter(name = "shortUrl", description = "Shortened URL", required = true)
+            },
+            responses = {
+                    @ApiResponse(responseCode = "302", description = "Redirect to the original URL",
+                            content = @Content(schema = @Schema(hidden = true))),
+                    @ApiResponse(responseCode = "404", description = "Shortened URL not found")
+            }
+    )
+    @GetMapping("/{shortUrl}")
+    @PreAuthorize("permitAll()")
+    public ResponseEntity<Void> redirect(@PathVariable String shortUrl) {
+        Optional<ShortUrl> foundUrl = shortUrlService.findAndRedirect(shortUrl);
+        if (foundUrl.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .header("Location", foundUrl.get().getOriginUrl())
+                .build();
+    }
 
     @Operation(
             summary = "Create a new shortened URL",
@@ -48,14 +91,8 @@ public class ShortUrlController {
             }
     )
     @PostMapping
-//    @PreAuthorize("#request.user == principal.id")
-    public ResponseEntity<ShortUrlResponse> createShortUrl(@Valid @RequestBody ShortUrlCreateRequest request,
-                                                           @AuthenticationPrincipal User user) {
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);  // Обработка ошибки, если пользователь не найден
-        }
-
-        ShortUrlResponse response = shortUrlService.createShortUrl(request, user);
+    public ResponseEntity<ShortUrlResponse> createShortUrl(@Valid @RequestBody ShortUrlCreateRequest request) {
+        ShortUrlResponse response = shortUrlService.createShortUrl(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
     }
@@ -71,11 +108,8 @@ public class ShortUrlController {
                             content = @Content(schema = @Schema(implementation = ShortUrlResponse[].class)))
             }
     )
-    @GetMapping
-    public ResponseEntity<List<ShortUrlResponse>> getAllShortUrlsByUser(@AuthenticationPrincipal User user) {
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-        }
+    @GetMapping("/my-urls")
+    public ResponseEntity<List<ShortUrlResponse>> getAllShortUrlsByUser(@RequestAttribute User user) {
         List<ShortUrlResponse> response = shortUrlService.findAllShortUrlsByUser(user);
         return ResponseEntity.ok(response);
     }
@@ -93,7 +127,7 @@ public class ShortUrlController {
                     @ApiResponse(responseCode = "404", description = "URL not found")
             }
     )
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/my-urls/{id}")
     public ResponseEntity<Void> deleteShortUrl(@PathVariable long id, @RequestAttribute User user) {
         Optional<ShortUrlResponse> shortUrl = shortUrlService.findByIdAndUser(id, user);
         if (shortUrl.isEmpty()) {
@@ -141,7 +175,7 @@ public class ShortUrlController {
                     @ApiResponse(responseCode = "404", description = "Shortened URL not found")
             }
     )
-    @GetMapping("/{shortUrl}/stats")
+    @GetMapping("/my-urls/{shortUrl}/stats")
     public ResponseEntity<ShortUrlStatsResponse> getShortUrlStats(@PathVariable String shortUrl, @RequestAttribute User user) {
         Optional<ShortUrlStatsResponse> stats = shortUrlService.getShortUrlStats(shortUrl, user);
 
@@ -164,7 +198,7 @@ public class ShortUrlController {
                     @ApiResponse(responseCode = "404", description = "Shortened URL not found")
             }
     )
-    @GetMapping("/search")
+    @GetMapping("/my-urls/search")
     public ResponseEntity<String> findOriginalUrl(@RequestParam String shortUrl, @RequestAttribute User user) {
         Optional<String> originUrl = shortUrlService.findOriginalUrl(shortUrl, user);
         if (originUrl.isEmpty()) {

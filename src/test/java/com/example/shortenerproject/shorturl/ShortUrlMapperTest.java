@@ -1,7 +1,7 @@
 package com.example.shortenerproject.shorturl;
 
-import com.example.shortenerproject.shorturl.dto.ShortUrlCreateRequest;
-import com.example.shortenerproject.shorturl.dto.ShortUrlResponse;
+import com.example.shortenerproject.shorturl.dto.request.ShortUrlCreateRequest;
+import com.example.shortenerproject.shorturl.dto.response.ShortUrlResponse;
 import com.example.shortenerproject.user.User;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
@@ -14,9 +14,7 @@ class ShortUrlMapperTest {
     @Test
     void shouldMapShortUrlCreateRequestToEntity() {
         // Arrange
-        ShortUrlCreateRequest request = new ShortUrlCreateRequest();
-        request.setOriginUrl("https://example.com");
-
+        ShortUrlCreateRequest request = new ShortUrlCreateRequest("https://example.com", 1l);
 
         ShortUrl shortUrl = shortUrlMapper.toEntity(request);
 

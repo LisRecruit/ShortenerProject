@@ -1,7 +1,7 @@
 package com.example.shortenerproject.shorturl;
 
-import com.example.shortenerproject.shorturl.dto.ShortUrlCreateRequest;
-import com.example.shortenerproject.shorturl.dto.ShortUrlResponse;
+import com.example.shortenerproject.shorturl.dto.request.ShortUrlCreateRequest;
+import com.example.shortenerproject.shorturl.dto.response.ShortUrlResponse;
 
 import com.example.shortenerproject.user.User;
 import org.mapstruct.Mapper;

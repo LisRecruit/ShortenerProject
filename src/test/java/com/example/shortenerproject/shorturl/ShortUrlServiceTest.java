@@ -3,8 +3,8 @@ package com.example.shortenerproject.shorturl;
 import com.example.shortenerproject.exception.CantBeNullException;
 import com.example.shortenerproject.exception.EntityNotFoundException;
 import com.example.shortenerproject.exception.InvalidOriginUrlException;
-import com.example.shortenerproject.shorturl.dto.ShortUrlCreateRequest;
-import com.example.shortenerproject.shorturl.dto.ShortUrlResponse;
+import com.example.shortenerproject.shorturl.dto.request.ShortUrlCreateRequest;
+import com.example.shortenerproject.shorturl.dto.response.ShortUrlResponse;
 import com.example.shortenerproject.user.User;
 import com.example.shortenerproject.user.UserRepository;
 import com.example.shortenerproject.utils.Validator;
@@ -52,7 +52,8 @@ class ShortUrlServiceTest {
         MockitoAnnotations.openMocks(this);
         user = new User(1L, "username", "Password1");
         createRequest = new ShortUrlCreateRequest();
-        createRequest.setOriginUrl("http://http.cat");
+        createRequest.setOriginUrl("http://example.com");
+        createRequest.setUser(1L);
 
 
         shortUrl = new ShortUrl();
@@ -91,7 +92,7 @@ class ShortUrlServiceTest {
 
     @Test
     void createShortUrl_InvalidUrl_ShouldThrowException() {
-        when(urlValidator.isValidUrl(createRequest.getOriginUrl())).thenReturn(false);
+        when(urlValidator.isValidUrl(createRequest.originUrl())).thenReturn(false);
 
         InvalidOriginUrlException exception = assertThrows(InvalidOriginUrlException.class, () ->
                 shortUrlService.createShortUrl(createRequest, user)
@@ -101,8 +102,8 @@ class ShortUrlServiceTest {
 
     @Test
     void createShortUrl_UserNotFound_ShouldThrowException() {
-        when(urlValidator.isValidUrl(createRequest.getOriginUrl())).thenReturn(true);
-        when(userRepository.findById(user.getId())).thenReturn(Optional.empty());
+        when(urlValidator.isValidUrl(createRequest.originUrl())).thenReturn(true);
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () ->
                 shortUrlService.createShortUrl(createRequest, user)
@@ -170,8 +171,7 @@ class ShortUrlServiceTest {
 
     @Test
     void updateShortUrl_ValidRequest_ShouldUpdateShortUrl() {
-        ShortUrlCreateRequest updateRequest = new ShortUrlCreateRequest();
-        updateRequest.setOriginUrl("http://updated-example.com");
+        ShortUrlCreateRequest updateRequest = new ShortUrlCreateRequest("http://updated-example.com",1l);
 
 
         when(shortUrlRepository.findById(1L)).thenReturn(Optional.of(shortUrl));
@@ -199,8 +199,7 @@ class ShortUrlServiceTest {
 
     @Test
     void updateShortUrl_UserNotFound_ShouldThrowException() {
-        ShortUrlCreateRequest updateRequest = new ShortUrlCreateRequest();
-        updateRequest.setOriginUrl("http://updated-example.com");
+        ShortUrlCreateRequest updateRequest = new ShortUrlCreateRequest("http://updated-example.com", 1l );
 
         when(shortUrlRepository.findById(1L)).thenReturn(Optional.empty());
 

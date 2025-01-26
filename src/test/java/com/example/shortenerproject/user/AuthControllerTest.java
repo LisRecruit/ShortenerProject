@@ -1,5 +1,6 @@
 package com.example.shortenerproject.user;
 
+import com.example.shortenerproject.exception.dto.ErrorResponse;
 import com.example.shortenerproject.security.JwtUtil;
 import com.example.shortenerproject.user.dto.request.LoginRequest;
 import com.example.shortenerproject.user.dto.request.UserCreateRequest;
@@ -32,6 +33,7 @@ class AuthControllerTest {
     void testLoginSuccess() {
         LoginRequest loginRequest = new LoginRequest("testuser", "password");
         UserDetails userDetails = mock(UserDetails.class);
+
         when(userDetailsService.loadUserByUsername("testuser")).thenReturn(userDetails);
         when(jwtUtil.generateToken(userDetails)).thenReturn("fake-jwt-token");
 
@@ -48,12 +50,13 @@ class AuthControllerTest {
     @Test
     void testLoginBadCredentials() {
         LoginRequest loginRequest = new LoginRequest("testuser", "wrongpassword");
-        doThrow(new BadCredentialsException("Bad credentials")).when(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
 
-        ResponseEntity<?> response = authController.login(loginRequest);
+        doThrow(new BadCredentialsException("Bad credentials"))
+                .when(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
 
-        assertEquals(401, response.getStatusCode().value());
-        assertEquals("Invalid username or password", response.getBody());
+        Exception exception = assertThrows(BadCredentialsException.class, () -> authController.login(loginRequest));
+
+        assertEquals("Bad credentials", exception.getMessage());
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
         verifyNoInteractions(userDetailsService, jwtUtil);
     }
@@ -62,13 +65,13 @@ class AuthControllerTest {
     void testRegistrationSuccess() {
         UserCreateRequest request = new UserCreateRequest("newuser", "Password1");
         UserDetails userDetails = mock(UserDetails.class);
-        User createdUser = User.builder()
-                .id(1L) // Задаем ID пользователя
-                .username("newuser")
-                .password("encodedPassword") // Неважно, так как он не используется в тесте
-                .build();
+        User mockedUser = mock(User.class);
 
-        when(userService.createUser(request)).thenReturn(createdUser);
+        when(mockedUser.getId()).thenReturn(1L);
+        when(mockedUser.getUsername()).thenReturn("newuser");
+
+        when(userService.createUser(request)).thenReturn("User created successfully");
+        when(userService.getUserByUsername("newuser")).thenReturn(mockedUser);
         when(userDetailsService.loadUserByUsername("newuser")).thenReturn(userDetails);
         when(jwtUtil.generateToken(userDetails)).thenReturn("fake-jwt-token");
 
@@ -80,22 +83,40 @@ class AuthControllerTest {
         assertEquals("fake-jwt-token", registrationResponse.token());
         assertEquals("newuser", registrationResponse.userResponse().username());
         assertEquals("User created successfully", registrationResponse.message());
+
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
         verify(userService).createUser(request);
+        verify(userService).getUserByUsername("newuser");
         verify(userDetailsService).loadUserByUsername("newuser");
         verify(jwtUtil).generateToken(userDetails);
     }
 
+
     @Test
-    void testRegistrationFailure() {
-        UserCreateRequest request = new UserCreateRequest("newuser", "Password1");
-        when(userService.createUser(request)).thenThrow(new IllegalArgumentException("Username already exists"));
+    void testRegistrationUsernameExists() {
+        UserCreateRequest request = new UserCreateRequest("existinguser", "Password1");
+        when(userService.existsByUsername("existinguser")).thenReturn(true);
 
         ResponseEntity<?> response = authController.registration(request);
 
         assertEquals(400, response.getStatusCode().value());
-        assertEquals("Username already exists", response.getBody());
-        verify(userService).createUser(request);
+        assertTrue(response.getBody() instanceof ErrorResponse);
+        ErrorResponse errorResponse = (ErrorResponse) response.getBody();
+        assertEquals("400", errorResponse.status());
+        assertEquals("Username already exists. Please try again.", errorResponse.message());
+        verify(userService).existsByUsername("existinguser");
+        verifyNoInteractions(authenticationManager, userDetailsService, jwtUtil);
+    }
+
+    @Test
+    void testRegistrationPasswordInvalid() {
+        UserCreateRequest request = new UserCreateRequest("newuser", "short");
+        when(userService.existsByUsername("newuser")).thenReturn(false);
+
+        ResponseEntity<?> response = authController.registration(request);
+
+        assertEquals(400, response.getStatusCode().value());
+        assertEquals("Password must contain at least 8 characters, including digits, uppercase and lowercase letters.", response.getBody());
         verifyNoInteractions(authenticationManager, userDetailsService, jwtUtil);
     }
 
@@ -107,7 +128,10 @@ class AuthControllerTest {
         ResponseEntity<?> response = authController.registration(request);
 
         assertEquals(500, response.getStatusCode().value());
-        assertEquals("Internal Server Error", response.getBody());
+        assertTrue(response.getBody() instanceof ErrorResponse);
+        ErrorResponse errorResponse = (ErrorResponse) response.getBody();
+        assertEquals("INTERNAL_SERVER_ERROR", errorResponse.status());
+        assertEquals("Internal Server Error", errorResponse.message());
         verify(userService).createUser(request);
         verifyNoInteractions(authenticationManager, userDetailsService, jwtUtil);
     }

@@ -1,8 +1,8 @@
 package com.example.shortenerproject.shorturl;
 
-import com.example.shortenerproject.shorturl.dto.ShortUrlCreateRequest;
-import com.example.shortenerproject.shorturl.dto.ShortUrlResponse;
-import com.example.shortenerproject.shorturl.dto.ShortUrlStatsResponse;
+import com.example.shortenerproject.shorturl.dto.request.ShortUrlCreateRequest;
+import com.example.shortenerproject.shorturl.dto.response.ShortUrlResponse;
+import com.example.shortenerproject.shorturl.dto.response.ShortUrlStatsResponse;
 import com.example.shortenerproject.user.User;
 import com.example.shortenerproject.user.UserRepository;
 import com.example.shortenerproject.utils.Validator;
@@ -83,7 +83,7 @@ class ShortUrlControllerTest {
 
         String requestBody = new ObjectMapper().writeValueAsString(request);
 
-        mockMvc.perform(post("/api/v1/short-urls")
+        mockMvc.perform(post("/api/v1/short-urls/my-urls")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isCreated())
@@ -109,7 +109,7 @@ class ShortUrlControllerTest {
                         .user(1L)
                         .build()
         ));
-        mockMvc.perform(get("/api/v1/short-urls")
+        mockMvc.perform(get("/api/v1/short-urls/my-urls")
                         .requestAttr("user", testUser))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].shortUrl").value("QWertY14"))
@@ -132,7 +132,7 @@ class ShortUrlControllerTest {
         when(shortUrlService.getShortUrlStats(shortUrl, mockUser))
                 .thenReturn(Optional.of(mockShortUrlStatsResponse));
 
-        mockMvc.perform(get("/api/v1/short-urls/" + shortUrl + "/stats")
+        mockMvc.perform(get("/api/v1/short-urls/my-urls/" + shortUrl + "/stats")
                         .requestAttr("user", mockUser))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.shortUrl").value(shortUrl))
@@ -154,7 +154,7 @@ class ShortUrlControllerTest {
 
         when(shortUrlService.findOriginalUrl(shortUrl, mockUser)).thenReturn(Optional.of(originalUrl));
 
-        mockMvc.perform(get("/api/v1/short-urls/search")
+        mockMvc.perform(get("/api/v1/short-urls/my-urls/search")
                         .param("shortUrl", shortUrl)
                         .requestAttr("user", mockUser))
                 .andExpect(status().isOk())
