@@ -1,4 +1,4 @@
-package com.example.shortenerproject.shorturl.dto;
+package com.example.shortenerproject.shorturl.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;

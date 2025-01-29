@@ -3,14 +3,16 @@ package com.example.shortenerproject.shorturl;
 import com.example.shortenerproject.exception.dto.ErrorResponse;
 
 import com.example.shortenerproject.security.JwtUtil;
-import com.example.shortenerproject.shorturl.dto.ShortUrlCreateRequest;
+import com.example.shortenerproject.shorturl.dto.request.ShortUrlCreateRequest;
 import com.example.shortenerproject.shorturl.dto.response.ShortUrlResponse;
 import com.example.shortenerproject.shorturl.dto.response.ShortUrlStatsResponse;
 import com.example.shortenerproject.user.User;
 import com.example.shortenerproject.user.UserRepository;
 import com.example.shortenerproject.user.UserService;
+import com.example.shortenerproject.utils.Validator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -19,7 +21,6 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -33,13 +34,14 @@ public class ShortUrlController {
     private final ShortUrlService shortUrlService;
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
+    private final Validator validator;
 
     @Autowired
-    public ShortUrlController(ShortUrlService shortUrlService, JwtUtil jwtUtil, UserRepository userRepository, UserService userService) {
+    public ShortUrlController(ShortUrlService shortUrlService, JwtUtil jwtUtil, UserRepository userRepository, UserService userService, Validator validator) {
         this.shortUrlService = shortUrlService;
         this.jwtUtil = jwtUtil;
         this.userRepository = userRepository;
-
+        this.validator = validator;
     }
 
     @Operation(
@@ -65,16 +67,16 @@ public class ShortUrlController {
 
     @Operation(
             summary = "Create a new shortened URL",
-            description = "Allows registered users to create a new shortened URL for a given original URL.",
+            description = "Allows registered users to generate a shortened URL for a given original URL.",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "Details for creating a shortened URL",
+                    description = "Payload for creating a shortened URL",
                     required = true,
                     content = @Content(schema = @Schema(implementation = ShortUrlCreateRequest.class))
             ),
             responses = {
                     @ApiResponse(responseCode = "201", description = "Shortened URL created successfully",
                             content = @Content(schema = @Schema(implementation = ShortUrlResponse.class))),
-                    @ApiResponse(responseCode = "400", description = "Invalid input data")
+                    @ApiResponse(responseCode = "400", description = "Invalid request data")
             }
     )
     @PostMapping
@@ -91,7 +93,7 @@ public class ShortUrlController {
             summary = "Get all shortened URLs by the user",
             description = "Retrieve a list of all shortened URLs created by the authenticated user.",
             parameters = {
-                    @Parameter(name = "user", hidden = true)
+                    @Parameter(name = "Authorization", description = "JWT token for authentication", required = true, in = ParameterIn.HEADER)
             },
             responses = {
                     @ApiResponse(responseCode = "200", description = "List of shortened URLs",
@@ -112,7 +114,7 @@ public class ShortUrlController {
             description = "Delete a shortened URL by its ID. Only the owner can delete their URLs.",
             parameters = {
                     @Parameter(name = "id", description = "ID of the shortened URL", required = true),
-                    @Parameter(name = "user", hidden = true)
+                    @Parameter(name = "Authorization", description = "JWT token for authentication", required = true, in = ParameterIn.HEADER)
             },
             responses = {
                     @ApiResponse(responseCode = "204", description = "URL deleted successfully"),
@@ -136,22 +138,23 @@ public class ShortUrlController {
 
     @Operation(
             summary = "Redirect to the original URL",
-            description = "Redirect to the original URL associated with the given short URL.",
+            description = "Redirects the user to the original URL associated with the given short URL.",
             parameters = {
-                    @Parameter(name = "shortUrl", description = "Shortened URL", required = true)
+                    @Parameter(name = "shortUrl", description = "The shortened URL to be redirected", required = true)
             },
             responses = {
-                    @ApiResponse(responseCode = "302", description = "Redirect to the original URL",
-                            content = @Content(schema = @Schema(hidden = true))),
+                    @ApiResponse(responseCode = "302", description = "Redirecting to the original URL"),
+                    @ApiResponse(responseCode = "400", description = "Shortened URL is expired"),
                     @ApiResponse(responseCode = "404", description = "Shortened URL not found")
             }
     )
     @GetMapping("/{shortUrl}")
-    @PreAuthorize("permitAll()")
-    public ResponseEntity<Void> redirect(@PathVariable String shortUrl) {
+    public ResponseEntity<?> redirect(@PathVariable String shortUrl) {
         Optional<ShortUrl> foundUrl = shortUrlService.findAndRedirect(shortUrl);
         if (foundUrl.isEmpty()) {
             return ResponseEntity.notFound().build();
+        } else if(!validator.isDateValid(foundUrl.get())) {
+            return ResponseEntity.status(400).body("Shortened URL is expired");
         }
         return ResponseEntity.status(HttpStatus.FOUND)
                 .header("Location", foundUrl.get().getOriginUrl())
@@ -163,7 +166,7 @@ public class ShortUrlController {
             description = "Retrieve statistics such as usage count for a specific shortened URL owned by the user.",
             parameters = {
                     @Parameter(name = "shortUrl", description = "Shortened URL", required = true),
-                    @Parameter(name = "user", hidden = true)
+                    @Parameter(name = "Authorization", description = "JWT token for authentication", required = true, in = ParameterIn.HEADER)
             },
             responses = {
                     @ApiResponse(responseCode = "200", description = "Statistics for the shortened URL",
@@ -186,19 +189,20 @@ public class ShortUrlController {
 
     @Operation(
             summary = "Find the original URL",
-            description = "Retrieve the original URL based on the given shortened URL.",
+            description = "Retrieve the original URL based on the given shortened URL. Requires authentication.",
             parameters = {
-                    @Parameter(name = "shortUrl", description = "Shortened URL", required = true),
-                    @Parameter(name = "user", hidden = true)
+                    @Parameter(name = "shortUrl", description = "The shortened URL to look up", required = true),
+                    @Parameter(name = "Authorization", description = "JWT token for authentication", required = true, in = ParameterIn.HEADER)
             },
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Original URL found",
+                    @ApiResponse(responseCode = "200", description = "Successfully retrieved original URL",
                             content = @Content(schema = @Schema(implementation = String.class))),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
                     @ApiResponse(responseCode = "404", description = "Shortened URL not found")
             }
     )
-    @GetMapping("/my-urls/search")
-    public ResponseEntity<String> findOriginalUrl(@RequestParam String shortUrl, @RequestHeader("Authorization") String token) {
+    @GetMapping("/my-urls/find/{shortUrl}")
+    public ResponseEntity<String> findOriginalUrl(@PathVariable String shortUrl, @RequestHeader("Authorization") String token) {
         String jwt = token.startsWith("Bearer ") ? token.substring(7) : token;
         Long userId = jwtUtil.extractClaim(jwt, claims -> claims.get("userId", Long.class));
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));

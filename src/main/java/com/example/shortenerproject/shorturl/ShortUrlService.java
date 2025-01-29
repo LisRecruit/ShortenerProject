@@ -4,7 +4,7 @@ import com.example.shortenerproject.exception.CantBeNullException;
 import com.example.shortenerproject.exception.EntityNotFoundException;
 import com.example.shortenerproject.exception.InvalidOriginUrlException;
 
-import com.example.shortenerproject.shorturl.dto.ShortUrlCreateRequest;
+import com.example.shortenerproject.shorturl.dto.request.ShortUrlCreateRequest;
 import com.example.shortenerproject.shorturl.dto.response.ShortUrlResponse;
 import com.example.shortenerproject.shorturl.dto.response.ShortUrlStatsResponse;
 import com.example.shortenerproject.user.User;
@@ -166,15 +166,6 @@ public class ShortUrlService {
     public Optional<ShortUrl> findAndRedirect(String shortUrl) {
         Optional<ShortUrl> foundUrl = shortUrlRepository.findByShortUrl(shortUrl);
         if (foundUrl.isPresent()) {
-            ShortUrl url = foundUrl.get();
-
-            // Проверяем, истек ли срок действия
-            if (!urlValidator.isDateValid(url)) {
-                // Если срок действия истек, возвращаем пустое значение
-                return Optional.empty();
-            }
-
-            // Увеличиваем счетчик переходов
             incrementTransitionCount(shortUrl);
         }
         return foundUrl;
